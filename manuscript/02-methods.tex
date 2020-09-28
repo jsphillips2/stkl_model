@@ -1,0 +1,525 @@
+
+
+\section*{Methods}
+
+%========================================================================================
+
+\subsection*{Study system}
+
+%========================================================================================
+
+\subsection*{Population estimate}
+
+From 1991 to 2016, surveys of the stickleback population were conducted twice annually, 
+the first in either June or July and second in August or September. 
+Samples were collected from 5 stations in the south basin and 3 stations in the noth basin.
+These stations provided wide coverage of the two basins, 
+with the exception of sites near the shoreline 
+(sampling of shorline sites began in 2008 but those data are not included here)
+and of the eastern portion of the south basin which historically has had neglibile 
+densities of sticklebacks.
+For each sampling event at each station, 
+5 traps were set for two 12-hour [I think] sessions, 
+one during the day and one during the night.
+After trapping, individuals were sorted into two size classes,
+with a threshold of 50mm in the June/July sampling and 45mm in the August/September sampling.
+These size categories roughly map onto sexual maturity,
+and while it is possible for individuals less than 45mm to be sexually mature,
+for this study we treat the small size class as non-reproductive "juveniles"
+and the large size class as potentially reprooductive "adults".
+
+Within each basin and size class, 
+station catches were of comparable magnitude and 
+strongly syncrhonized through time (appendix).
+Therefore, our analysis focused on the dynamics of basin-level abundances
+of the two size classes through time.
+We used a modified N-mixture model to estimate relative basin-level population densities
+for the two size classes,
+which we than scaled by the ratio of sampling areas to obtain estimates of relative
+abundance between the two basins.
+
+The probability of trapping some number of individuals $y_i$ 
+was modeled as
+%
+\begin{equation}
+  y_i \sim \text{Binomial}\left(\upphi_{g_{\upphi}[i]}, ~\upnu_{g_{\upnu}[i]}\right)
+\end{equation}
+%
+where $\upphi_{g_{\upphi}[i]}$ is the detection probability 
+and $\upnu_{g_{\upnu}[i]}$ is the population density for a given 
+station-size-date combination for the $i$th observation.
+The density is in units of individuals per station, 
+with each station characterizing a sampling area that is 
+taken to be the same size for all stations.
+The functions ${g_{\upphi}[i]}$ and ${g_{\upnu}[i]}$ map observations to the 
+appropriate grouping. 
+
+The discrete population density for each station-size-date combination was modeled as
+%
+\begin{equation}
+  \upnu_{g_{\upnu}[i]} \sim \text{Poisson}\left(\uplambda_{g_{\uplambda}[i]}\right)
+\end{equation}
+where $\uplambda_{g_{\uplambda}[i]}$ is the mean population density across stations 
+within a basin-size-date combination. 
+Variation in $\uplambda_{g_{\uplambda}[i]}$ across basin, size, and date was characterized as 
+%
+\begin{equation}
+  \uplambda_{g_{\uplambda}[i]} \sim 
+    \text{Gamma}\left(\upmu_{\uplambda}^2/\upsigma_{\uplambda}^2,
+      ~\upmu_{\uplambda}/\upsigma_{\uplambda}^2\right)
+\end{equation}
+%
+with overall mean $\upmu_{\uplambda}$ and standard deviation $\upsigma_{\uplambda}$. 
+The detection probability for the $i$th observation was modeled using a 
+"logistic regression"-style approach:
+%
+\begin{equation}
+  \upphi_{g_{\upphi}[i]} = 
+    \text{logit}^{-1}\left(\mathbf{x}_{g_{\upphi}[i]}^\text{T}~{\boldsymbol\upbeta}\right)
+\end{equation}
+%
+\noindent where $\mathbf{x}_{g_{\upphi}[i]}^\text{T}$ is a transposed vector 
+of predictor values for the $i$th observation
+(including '1' in the first column for the overall intercept)
+and $\boldsymbol\upbeta$ is a column vector of coefficients. 
+We included main effects for trapping time (day vs. night) and station 
+to account for  systematic differences in detection probability, 
+as well as main effects and two-way interactions for size class, basin, and date 
+to provide a source of "observation error" beyond the binomial sampling process. 
+
+The model was fit using JAGS via 'runjags' in R. 
+Weakly-informative gamma priors were used for
+$\upmu_{\uplambda}$ and $\upsigma_{\uplambda}$, and Gaussian priors 
+for the effects in ${\boldsymbol\upbeta}$. 
+
+%========================================================================================
+
+\subsection*{Demographic model}
+
+We used a multiregional stage-structured model with time-varying demographic rates
+to characterize the dynamics of the stickleback population. 
+The model included mortality, transitions between life stages, movement between basins,
+and recruitment of new individuals into the population. 
+These demographic rates were organized into matrices,
+which could then be used to project the abundance of individuals in each 
+stage and basin through time.
+We inferred the demographic rates by  
+fitting the model to the times series of abundance estimates,
+which is sometimes referred to as "inverse modeling". 
+For parameter estimation, 
+the model was formulated to match the semiannual nature of the abundance estimates.
+However, our demographic analysis of the model focused on the annual dynamics, 
+both to circumvent interpretational challenges 
+posed by the unequal sampling intervals within years
+and to better match the life history of threespine stickleback in M\'{y}vatn.
+
+Time-dependent transitions between stages and basins 
+were modeled with a $4\times{4}$ transition rate matrix $\mathbf{Q}_t$ defined as
+%
+\begin{equation} \label{eq:Q}
+\mathbf{Q}_t = 
+f\left(
+\left[
+\begin{array}{c|ccc}
+    \overset{s}{\mathbf{U}_t} & \overset{n\rightarrow s}{\mathbf{D}_t} \\
+    \hline
+    \overset{s\rightarrow n}{\mathbf{D}_t} & \overset{n}{\mathbf{U}_t} 
+    \end{array}
+\right]
+\right)
+\end{equation}
+%
+where $t$ is time, 
+$\overset{i}{\mathbf{U}_t}$ is a $2\times{2}$ matrix of stage-transition rates
+for basin $i$ ($s$ for south and $n$ for north), and
+$\overset{i\rightarrow h}{\mathbf{D}_t}$ is a $2\times{2}$ matrix 
+of basin-transition rates from basin $i$ to $h$.
+The function $f$ maps the sub-matrices to a full transition rate matrix that 
+quantifies the overall loss rate from each stage-basin combination by 
+subtracting the sum of the off-diagonal elements from the diagonal element 
+for each column (the fully expanded form of $\mathbf{Q}_t$ is shown in the appendix).
+
+The stage-transition matrix for basin $i$ was defined as
+%
+\begin{equation} \label{eq:U}
+\overset{i}{\mathbf{U}_t} = 
+\left[
+\begin{array}{cccc}
+    -\overset{j_i}{\upmu_t} & 0 \\
+    \overset{j_i\rightarrow a_i}{\upgamma_t} & -\overset{a_i}{\upmu_t}
+    \end{array}
+\right]
+\end{equation}
+%
+where $\overset{k_i}{\upmu_t}$ is the mortality rate for stage $k$ in basin $i$
+($j$ for juveniles and $a$ for adults)
+and $\overset{j_i\rightarrow a_i}{\upgamma_t}$ 
+is the development rate from juveniles to adults.
+Note that mortality implicitly entails transition to a "death state" that is omitted 
+for concision, as dead individuals do not contribute further to the dynamics. 
+The basin-transition matrix was defined as
+%
+\begin{equation} \label{eq:D}
+\overset{i\rightarrow h}{\mathbf{D}_t} = 
+\left[
+\begin{array}{cccc}
+    \overset{j_{i}\rightarrow j_{h}}{\updelta_t} & 0 \\
+    0 & \overset{a_{i}\rightarrow a_{h}}{\updelta_t}
+    \end{array}
+\right]
+\end{equation}
+where $\overset{k_{i}\rightarrow k_{h}}{\updelta_t}$ is the movement rate for stage $k$ 
+from basin $i$ to $h$. 
+While $\mathbf{Q}_t$ does not explicitly include transitions from juveniles to adults 
+across basins, these transitions occur implicitly through the combined effects of
+development and movement over a given time interval.
+
+In order to project the transition dynamics in discrete time, 
+we related the transition \emph{rate} matrix $\mathbf{Q}_t$ 
+to the transition \emph{probability} matrix $\mathbf{P}_t$ 
+with the following equation
+%
+\begin{equation} \label{eq:P}
+\mathbf{P}_t = e^{ \upDelta T \mathbf{Q}_t}
+\end{equation}
+%
+which is the solution to the differential equation associated with the Markov process
+specified by $\mathbf{Q}_t$ when projected over interval $\upDelta T$.
+
+Appearance of new individuals in the population was modeled with
+a $4\times{4}$ recruitment matrix 
+%
+\begin{equation} \label{eq:Q}
+\mathbf{R}_t = 
+\left[
+\begin{array}{c|ccc}
+    \overset{s}{\mathbf{R}_t}  & \mathbf{0} \\
+    \hline
+    \mathbf{0} & \overset{n}{\mathbf{R}_t}
+    \end{array}
+\right]
+\end{equation}
+%
+comprising basin-specific sub-matrices
+%
+\begin{equation} \label{eq:R}
+\overset{i}{\mathbf{R}_t} = 
+\upDelta T
+\left[
+\begin{array}{cccc}
+    0 & \overset{i}{\uprho_t} \\
+    0 & 0
+    \end{array}
+\right]
+\end{equation}
+%
+where $\overset{i}{\uprho_t}$ is the per capita recruitment rate for basin $i$,
+with the assumption that individuals in the small size class ("juveniles") cannot reproduce. 
+Recruitment includes both offspring production and survival until 
+they are observed as "juveniles" at the next time step. 
+This formulation assumes that individuals born in a given basin remain there until the
+next time step, at which point they can disperse according 
+to $\overset{i\rightarrow h}{\mathbf{D}_t}$.
+Note that while we parameterized recruitment as a "rate" to account for
+unequal projection intervals, recruitment is not evenly distributed throughout the 
+year and is likely concentrated in the summer 
+(although not necessarily within the "summer" interval between June and August sampling).
+
+Given the time-dependent transition probability and recruitment matrices, 
+the population dynamics were projected as
+%
+\begin{equation} \label{eq:RPX}
+    \mathbf{x}_t = (\mathbf{P}_{t-1} + \mathbf{R}_{t-1})~\mathbf{x}_{t-1}
+\end{equation}
+%
+where $\mathbf{x}_{t-1}$ is a vector of stage- and basin-specific abundances at time $t-1$:
+%
+\begin{equation} \label{eq:X}
+\mathbf{x}_{t-1} = 
+\left[
+\begin{array}{cccc}
+    \overset{j_s}{x_{t-1}} \\
+    \overset{a_s}{x_{t-1}} \\
+    \overset{j_n}{x_{t-1}} \\
+    \overset{a_n}{x_{t-1}}
+    \end{array}
+\right]
+\text{.}
+\end{equation}
+%
+
+The elements of $\mathbf{P}_t + \mathbf{R}_t}$ characterize the overall contribution of 
+each state to each other state,
+with each contribution integrating multiple underlying demographic rates.
+Becuase it is these overall state contribution that manifest in the data,
+the underlying demographic rates can be interpreted as latent variables 
+that underpin the state contributions that are the primary focus of the analysis.
+
+We modeled temporal variation in the latent demographic rates 
+(i.e. the non-zero elements of 
+$\overset{i}{\mathbf{U}_t}$, $\overset{i\rightarrow h}{\mathbf{D}_t}$, 
+and $\overset{i}{\mathbf{R}_t}$)
+as 
+%
+\begin{equation} \label{eq:alpha}
+\upalpha_t = \upalpha'_t\times e^{\upbeta_{\upalpha}~b_t}
+\end{equation}
+%
+where $\upalpha_t$ is a given demographic parameter,
+$\upalpha'_t$ is the value from a corresponding random walk, 
+$\upbeta_{\upalpha}$ is a fixed season effect unique to that demographic parameter,
+and $b_t$ is a binary index for season (summer = 0 and winter = 1). 
+The fixed season effects allowed us to account for systematic differences between the 
+sampling intervals that remained consistent throughout the entire time series.
+
+The random walk for each parameter was modeled as
+%
+\begin{equation} \label{eq:walk}
+\upalpha'_t \sim \text{Normal}
+\left(
+      \upalpha'_{t-1},~\upsigma_{g[\upalpha]}
+\right) \text{T}(0, \infty)
+\end{equation}
+%
+with standard deviation $\upsigma_{g[\upalpha]$ and 
+truncated from the left ensure that values remained positive. 
+The function $g$ maps $\upalpha$ to a given type of demographic process 
+(stage-transition, basin-transition, or recruitment),
+such that a single random walk standard deviation was used 
+for each demographic process type.
+While formulated as random walks, 
+the realized sequences of inferred demographic rates 
+were not truly random walks because they were constrained by fitting the model to data.
+Therefore, the "random walks" are best understood as a convenient method 
+for allowing the demographic rates to vary through time with implicit "smoothing"
+arising from the autocorrelated nature of the walks.
+
+We fit the model in a Bayesian framework.
+The prior distributions for random walk standard deviations and initial values were 
+modeled using gamma distributions with shape parameter 1.5 and rate parameters set 
+to provide a reasonable scale for the corresponding parameter (see appendix). 
+This prior has zero density at 0 but is also concave down near zero, 
+and therefore allows posterior values arbitrarily close to zero without 
+artificially concentrating density at zero. 
+Furthermore, its has a long tail and is weakly informative relative to its overall scale. 
+
+% The initial values of the random walks had a tendency to concentrate 
+% near the mean of the prior, 
+% which is unsurprising given that purpose of the random walks was to allow the 
+% demographic rates to move towards reasonable values as informed by the data, 
+% which in turn provided limited information for initial value itself.
+% To compensate for this, we penalized the initial values for deviating from the
+% realized means of the random walks for each step in the MCMC sampling using 
+% a normal distribution scaled to have a maximum density of 1 
+% (i.e. have no contribution to the posterior) 
+% when the initial value equaled the random walk mean,
+% and then declined as the initial value deviated from the mean
+% at a rate controlled by the corresponding 
+% random walk standard deviation $\upsigma_{g[\upalpha]$.
+% This way the estimates of initial values were informed by the full time series.
+
+The likelihood of the observed data given the projected abundances was calculated as
+%
+\begin{equation} \label{eq:likelihood}
+\mathcal{L} = 
+\displaystyle\prod_{r}
+\displaystyle\prod_{t}
+\text{Normal}
+\left(
+\overset{r}{y_t}~|~\overset{r}{x_t},~\upsigma_y
+\right)
+\end{equation}
+%
+with standard deviation $\upsigma_y$.
+For population densities that are necessarily non-negative, 
+it is common to model the likelihood using a distribution that is similarly constrained,
+such as a log-normal distribution. 
+However, in our case using a log-normal distribution resulted in estimates of 
+$\overset{r}{x_t}$ that "ignored" large fluctuations in the observed data 
+that likely reflected real changes in the population but were compressed on a log scale. 
+Therefore, we opted for a normal (Gaussian) likelihood. 
+Because the model was parameterized in a way that ensured
+$\overset{r}{x_t}$ was non-negative,
+the posterior distribution of $\overset{r}{x_t}$ was also guaranteed to be non-negative
+even though normally distributed variables can take negative values. 
+However, to model the initial abundances using a normal distribution,
+it was necessary to truncate from the left at zero:
+%
+\begin{equation} \label{eq:x0}
+\overset{r}{x_{t=1}} \sim
+\text{Normal}
+\left(
+\overset{r}{y_{t=1}},~\upsigma_y
+\right) \text{T}(0, \infty)
+\text{.}
+\end{equation}
+%
+
+We fit the model using Stan 2.19 run from R 3.5.1
+with the ‘rstan’ package.
+Convergence was assessed by examining the effective sample size 
+per iteration of the Markov chain, 
+the number of divergent transitions, 
+and the potential scale reduction factor (\^{R}),
+which quantifies the relative variance within and between chains. 
+For all parameters, each of these diagnostics fell within 
+acceptable ranges as defined by Stan 2.19.
+
+%========================================================================================
+
+\subsection*{Annual dynamics}
+
+While we parameterized the model in terms of continuous rates
+to accommodate the seasonal nature of the data,
+we focused our demographic analysis on the annual projection matrix, 
+defined as 
+%
+\begin{equation} \label{eq:A}
+\mathbf{A}_y = \left(\mathbf{P}_{\tau[y]+1} + \mathbf{R}_{\tau[y]+1}\right) 
+                \left(\mathbf{P}_{\tau[y]} + \mathbf{R}_{\tau[y]}\right)
+\end{equation}
+%
+for year $y$ and sequential time steps within that year $\tau[y]$ and $\tau[y]+1$,
+with the year defined to start with the June/July census.
+$\mathbf{A}_y$ projects the dynamics from
+June/July of one year to June/July of the next year.
+Analyzing the annual projection matrix allowed us to circumvent interpretational
+issues that arose from unequal sampling intervals within years
+and aligned with the annual nature of spawning for M\'{y}vatn stickleback.
+To characterize the contribution of different demographic processes 
+to the population dynamics,
+we calculated the annual contribution of each stage $\times$ basin combination 
+to each other stage $\times$ basin combination in the next year as
+%
+\begin{equation} \label{eq:A}
+\mathbf{C}_y = \mathbf{A}_y~{\circ}~\mathbf{X}_{t[y]}
+\end{equation}
+%
+where $\mathbf{C}_{y}$ is a $4\times 4$ matrix of annual contributions,
+$\mathbf{X}_{t[y]}$ is a $4\times 4$ matrix 
+with idententical rows ${\mathbf{x}_{t[y]}}^\text{T}$,
+and ${\circ}$ denotes the Hadamard (element-wise) product. 
+This is essentially the same operation as a standard demographic projection
+(e.g., equation \ref{eq:RPX}) but without summing the contributions to a given state
+from different sources states. 
+
+
+We characterized the overall dynamics of the population in terms of the annual 
+population growth rate $\uplambda_y$, calculated as
+%
+\begin{equation} \label{eq:lam-n}
+\uplambda_y = \frac{N_y}{N_{y-1}}
+\end{equation}
+%
+where $N_y$ is the summed abundance across basins and life stages in year $y$.
+Temporal variation in $\uplambda_y$ reflects both variation in the demographic rates
+and transient fluctuations due to non-equilibrium state distribution. 
+Therefore, it is also informative to calculate the asymptotic population growth rate that 
+would obtian if the demographic rates in a given year were fixed indefinitely, 
+which is equal to the leading eigenvalue of $\mathbf{A}_y$. 
+The asymptotic growth rate $\uplambda^{'}_y$ implies population dynamics
+%
+\begin{equation} \label{eq:n-prime}
+N^{'}_y = \uplambda^{'}_y N^{'}_{y-1}
+\end{equation}
+%
+where $N^{'}_y$ is the analogue to $N_y$ that would obtain in the absence of 
+trasience due to non-equilibrium state distributions.
+We characterized the importance of transience for the abundance in a given year
+as the proportional deviation of the realized population size from asymptotic analogue:
+%
+\begin{equation} \label{eq:dev}
+\kappa = \frac{N_y - N^{'}_{y}}{N^{'}_y}
+\end{equation}
+%
+
+We related temporal variation in the realized population growth rate 
+to changes in the demographic rates 
+through both "prospective" and "retrospective" analyses \citep{caswell2001matrix}.
+The prosepctive analysis assessed how the population 
+would respond to hypothetical perturbations at each time step,
+which we quantified as
+the partial derivaties (i.e. sensitivities) of $\uplambda_y$ 
+with respect to perturbations in elements of $\mathbf{A}_y$ 
+according to \cite{caswell2007sensitivity}. 
+While proportional sensitivies (i.e. elasticities) 
+are commonly used in demographic analyses,
+we used sensitivies to retain information about variation in $\uplambda_y$
+that is normalized out in calculation of elasticities. 
+When projected over a single time step, 
+the sensitivity of $\uplambda_y$ with respect to a given element of $\mathbf{A}_y$
+equals the relative abundance 
+of the contributing population state (Appendix).
+In other words, the population growth rate is most sensitive to perturbations
+in the contibutions of abundant population states.
+However, when perturbations to elements of $\mathbf{A}_y$ are propogated through time,
+the sensitivities also include fluctuations
+in relative abundances that themselves arise from elements of $\mathbf{A}_y$,
+as occurs implicitly for conventional sensitvity analysis of the asymptotic growth rate.
+
+The retrospective analysis decomposed annual variation 
+in the realized population growth rate 
+into contributions from different demographic processes 
+according to \cite{koons2016life} and \cite{koons2017understanding}.
+For a given time step, 
+the contribution of a change in a demographic rate to the change in $\uplambda_y$
+has first-order approximation
+%
+\begin{equation} \label{eq:l-cont}
+\text{contribution}^{\upDelta \uplambda_y}_{\uptheta_k} \approx
+(\uptheta_{k,y+1} - \uptheta_{k,y})
+\left.\frac{\uppartial\uplambda}{\uppartial\uptheta_k}
+\right\vert_{\overline{\boldsymbol\uptheta}}
+\end{equation}
+%
+where $\uptheta_{k,y}$ is element $k$ of a vector $\boldsymbol\uptheta_y$ 
+containing elements of the projection matirx $\mathbf{A}_y$ and 
+the state distribution vector $\hat{\mathbf{x}}_{\tau[y]}$, 
+with total abundance of the state distribution 
+standardized to sum to one for each time step.
+The partial derivatives in equation \ref{eq:l-cont}
+are evaluated for a vector $\overline{\boldsymbol\uptheta}$
+containing average values for each element across years.
+Similarly, the overall contribution of variance in $\uptheta_k$ 
+to variance in $\uplambda_y$ is approximated as 
+%
+\begin{equation} \label{eq:l-var}
+\text{contribution}^{\text{var}(\boldsymbol\uplambda)}_{\uptheta_k} \approx
+\sum_{h}\text{cov}(\boldsymbol\uptheta_k, \boldsymbol\uptheta_h)
+\left.\frac{\uppartial \uplambda}{\uppartial \uptheta_k}
+\frac{\uppartial\uplambda}{\uppartial\uptheta_h}
+\right\vert_{\overline{\boldsymbol\uptheta}}
+\end{equation}
+%
+where $\boldsymbol\uplambda$, and $\boldsymbol\uptheta_k$ are vectors
+of population growth and demographic rates across years.
+While we included contributions of the state distribution 
+to changes and variance in $\uplambda$ in our calculations,
+these contributions were small relative to the direct contributions 
+of the demogoraphic rates.
+Therefore, to simplify the presentation we focused on contributions of the demogoraphic rates; 
+full results are included in the appendix.
+
+%========================================================================================
+
+\subsection*{For appendix}
+
+The population growth rate is related to elements of the annual project matrix
+according to the following relationship:
+%
+\begin{equation} \label{eq:lam-A}
+\uplambda_y = \frac{\sum_{j}\sum_{i}a_{ij}x_j}{\sum_{k}x_k}
+\end{equation}
+%
+where $i$ and $j$ denote columns of the annual projection matrix associated with elements
+$a_{ij}$,
+and $x_j$ is the element of the population distribution vector associted with column $j$.
+While $a_{ij}$ and $x_j$ vary annually, the year index is dropped for clarity.
+
+If projected over a single interval and neglecting any dependence of the state
+distribution on previous demographic rates, 
+the sensitivity of $\uplambda_y$ with respect to element $a_{ij}$ is 
+%
+\begin{equation} \label{eq:lam-A}
+\frac{\uppartial\uplambda_y}{\uppartial a_{ij}} = \frac{x_j}{\sum_{k}x_k}\end{equation}
+%

@@ -1,0 +1,424 @@
+\documentclass[11pt]{article}
+% \usepackage[sc]{mathpazo} % Like Palatino with extensive math support
+\usepackage[letterpaper, margin=1in]{geometry}
+% \usepackage{mathptmx} % Like Times New Roman
+\usepackage{newtxtext,newtxmath}
+\usepackage[math-style=ISO]{unicode-math}
+\usepackage{fullpage}
+\usepackage[authoryear,sectionbib,sort]{natbib}
+
+\linespread{1.7}
+
+\usepackage[utf8]{inputenc}
+\usepackage{lineno}
+\usepackage{titlesec}
+\titleformat{\section}[block]{\Large\bfseries\filcenter}{\thesection}{1em}{}
+\titleformat{\subsection}[block]{\Large\itshape\filcenter}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}[block]{\large\itshape}{\thesubsubsection}{1em}{}
+\titleformat{\paragraph}[runin]{\itshape}{\theparagraph}{1em}{}[. ]\renewcommand{\refname}{Literature Cited}
+
+% For Icelandic ð symbol:
+\DeclareTextSymbolDefault{\dh}{T1}
+% Increased spacing in math mode:
+\medmuskip=8mu % by default it is equal to 4 mu
+\thickmuskip=10mu % by default it is equal to 5 mu
+
+% Figures
+\usepackage{graphicx}
+% Table
+\usepackage{booktabs}
+
+
+%%%%%%%%%%%%%%%%%%%%%
+% Line numbering
+%%%%%%%%%%%%%%%%%%%%%
+%
+% Please use line numbering with your initial submission and
+% subsequent revisions. After acceptance, please turn line numbering
+% off by adding percent signs to the lines %\usepackage{lineno} and
+% to %\linenumbers{} and %\modulolinenumbers[3] below.
+%
+% To avoid line numbering being thrown off around math environments,
+% the math environments have to be wrapped using
+% \begin{linenomath*} and \end{linenomath*}
+%
+% (Thanks to Vlastimil Krivan for pointing this out to us!)
+
+\title{Transient dynamics of a spatially-structured population with time-varying demographic rates}
+
+
+
+% This version of the LaTeX template was last updated on
+% November 8, 2019.
+
+%%%%%%%%%%%%%%%%%%%%%
+% Authorship
+%%%%%%%%%%%%%%%%%%%%%
+% Please remove authorship information while your paper is under review,
+% unless you wish to waive your anonymity under double-blind review. You
+% will need to add this information back in to your final files after
+% acceptance.
+
+% \author{
+% Joseph S. Phillips$^{1,2, \dagger}$ \\
+% Kasha, Bjarni, Katja, Arni, Tony...}
+
+
+
+\usepackage{amsmath} % for split math environment
+
+
+\date{}
+
+\begin{document}
+
+\raggedright
+\setlength\parindent{0.25in}
+
+\maketitle
+
+
+% \noindent{} 1. Department of Aquaculture and Fish Biology, H\'{o}lar University, Skagafj\"{o}r{\dh}ur 551 Iceland
+% 
+% \noindent{} 2. Department of Integrative Biology, University of Wisconsin, Madison, Wisconsin 53706 USA
+% 
+% \noindent{} $\dagger$ E-mail: joseph@holar.is
+
+
+
+\bigskip
+
+Running head: {}
+
+% \textit{Manuscript elements}: %Figure~1, figure~2, table~1, online appendices~A and B (including $-- figure~A1 and figure~A2). Figure~2 is to print in color.
+
+\linenumbers{}
+% \modulolinenumbers[3]
+
+\clearpage
+
+% ---------------------------------------------------------------------------------------
+% ---------------------------------------------------------------------------------------
+% Abstract
+% ---------------------------------------------------------------------------------------
+% ---------------------------------------------------------------------------------------
+
+\input{00-abstract}
+
+\bigskip
+
+\textit{Keywords}: {}
+
+
+
+
+
+% ---------------------------------------------------------------------------------------
+% ---------------------------------------------------------------------------------------
+% Introduction
+% ---------------------------------------------------------------------------------------
+% ---------------------------------------------------------------------------------------
+
+\input{01-intro}
+
+
+
+
+% ---------------------------------------------------------------------------------------
+% ---------------------------------------------------------------------------------------
+% Methods
+% ---------------------------------------------------------------------------------------
+% ---------------------------------------------------------------------------------------
+
+
+\input{02-methods}
+
+
+
+% ---------------------------------------------------------------------------------------
+% ---------------------------------------------------------------------------------------
+% Results
+% ---------------------------------------------------------------------------------------
+% ---------------------------------------------------------------------------------------
+
+\input{03-results}
+
+
+
+
+
+% ---------------------------------------------------------------------------------------
+% ---------------------------------------------------------------------------------------
+% Discussion
+% ---------------------------------------------------------------------------------------
+% ---------------------------------------------------------------------------------------
+
+
+\input{04-discussion}
+
+
+
+
+
+
+
+% ---------------------------------------------------------------------------------------
+% ---------------------------------------------------------------------------------------
+% Acknowledgments
+% ---------------------------------------------------------------------------------------
+% ---------------------------------------------------------------------------------------
+% You may wish to remove the Acknowledgments section while your paper
+% is under review (unless you wish to waive your anonymity under
+% double-blind review) if the Acknowledgments reveal your identity.
+% If you remove this section, you will need to add it back in to your
+% final files after acceptance.
+
+% \section*{Acknowledgments}
+%
+% OEC would like to thank the world. GHC is much indebted to the solar system. AQE was supported by a generous grant from the Milky Way (MW/01010/987654).
+
+
+% ---------------------------------------------------------------------------------------
+% ---------------------------------------------------------------------------------------
+% Appendices
+% ---------------------------------------------------------------------------------------
+% ---------------------------------------------------------------------------------------
+
+% \newpage{}
+%
+% \input{app_A}
+
+
+% ---------------------------------------------------------------------------------------
+% ---------------------------------------------------------------------------------------
+% Literature Cited
+% ---------------------------------------------------------------------------------------
+% ---------------------------------------------------------------------------------------
+
+
+
+\bibliographystyle{ecology.bst}
+\clearpage
+
+\bibliography{refs.bib}
+
+\clearpage
+
+\begin{figure}
+\centering
+\includegraphics{../model/figures/figs/fig_fit.pdf}
+\caption{\label{fig:fit}
+Model fit
+}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics{../model/figures/figs/fig_cont.pdf}
+\caption{\label{fig:cont}
+Annual demographic projection matrix
+}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics{../model/figures/figs/fig_lam.pdf}
+\caption{\label{fig:pop}
+Population
+}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics{../model/figures/figs/fig_sens.pdf}
+\caption{\label{fig:sens}
+Sensitivity analysis
+}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics{../model/figures/figs/fig_cov.pdf}
+\caption{\label{fig:cov}
+Variance partitioning
+}
+\end{figure}
+
+% \begin{table}
+% \caption{\label{tab:season}
+% Season effects.
+% The estimates quantify the proportional relationship of winter rates (August to June) 
+% relative to summer rates (June to August). 
+% Note that the winter period is longer than the summer period, 
+% which means that the winter effects receive more weight on an annual basis. 
+% Point estimates are posterior medians. 
+% The 68\% uncertainty intervals are based on quantiles 
+% and are analagous to the coverage of standard errors.
+% }
+% \begin{tabular}{p{4cm}p{4cm}p{4cm}p}
+% \toprule
+% rate          &   stage    &    basin                       &  estimate (68\% interval) \\
+% \midrule
+% mortality     &   small    &    south                       &    0.87 (0.54, 1.41) \\
+% mortality     &   small    &    north                       &    0.82 (0.51, 1.31) \\
+% mortality     &   large    &    south                       &    1.17 (0.71, 1.80) \\
+% mortality     &   large    &    north                       &    0.64 (0.40, 1.00) \\
+% development   &   small    &    south                       &    1.41 (0.84, 2.35) \\
+% development   &   small    &    north                       &    1.69 (1.02, 2.73) \\
+% movement      &   small    &    south $\rightarrow$ north   &    1.07 (0.64, 1.77) \\
+% movement      &   small    &    north $\rightarrow$ south   &    1.00 (0.60, 1.70) \\
+% movement      &   large    &    south $\rightarrow$ north   &    1.04 (0.66, 1.60) \\
+% movement      &   large    &    north $\rightarrow$ south   &    0.91 (0.60, 1.35) \\
+% recruitment   &   -----    &    south                       &    0.44 (0.31, 0.64) \\
+% recruitment   &   -----    &    north                       &    0.63 (0.46, 0.90) \\
+% \bottomrule
+% \end{tabular}
+% \end{table}
+% 
+% 
+% \clearpage
+% 
+% 
+% \begin{figure}
+% \centering
+% \includegraphics{../model/output/full/fig_fit.pdf}
+% \caption{\label{fig:fit}
+% Fit of demographic model to abundance estimates.
+% Points and thin lines are the data,
+% thick lines are the model estimates,
+% and the shaded regions are 68\% uncertainty intervals
+% analagous to the coverage of standard errors.
+% The abundance estimates are from an N-mixture model
+% applied to trap-level data,
+% and account for variation in detection rates
+% by life stage, basin, and through time.
+% }
+% \end{figure}
+% 
+% \clearpage
+% 
+% \begin{figure}
+% \centering
+% \includegraphics{../model/output/full/fig_mort_dev.pdf}
+% \caption{\label{fig:mort_dev}
+% Temporal variation in mortality and development rates.
+% The rates are per capita and standardized to an interval of one month
+% and exclude season effects.
+% A rate equal to one implies that that the expected time to transition
+% (i.e. death or development) for a given individual is one month.
+% }
+% \end{figure}
+% 
+% \clearpage
+% 
+% \begin{figure}
+% \centering
+% \includegraphics{../model/output/full/fig_move.pdf}
+% \caption{\label{fig:move}
+% Temporal variation in movement rates between basins.
+% The rates are per capita and standardized to an interval of one month
+% and exclude fixed season effects.
+% A rate equal to one implies that that the expected time to transition
+% (i.e. movement from one basin to the other) for a given individual is one month.
+% }
+% \end{figure}
+% 
+% \clearpage
+% 
+% \begin{figure}
+% \centering
+% \includegraphics{../model/output/full/fig_rec.pdf}
+% \caption{\label{fig:rec}
+% Temporal variation per capita recruitment.
+% The rates are per capita and standardized to an interval of one month
+% and exclude fixed season effects.
+% Note that recruitment is not evenly distributed through the year;
+% we present monthly rates to match the model parameterization 
+% (see \ref{fig:net} for annual reproduction).
+% }
+% \end{figure}
+% 
+% \clearpage
+% 
+% \begin{figure}
+% \centering
+% \includegraphics{../model/output/full/fig_cont.pdf}
+% \caption{\label{fig:cont}
+% Annual contributions of each life stage $\times$ basin combination.
+% The projection for each year begins in June/July and projects 
+% to the next June/July 
+% (depending on when the population was censused). 
+% Note that colors denote the recipient basin, 
+% while line types indicate whether the contribution is within or between basins.
+% }
+% \end{figure}
+% 
+% \clearpage
+% 
+% \begin{figure}
+% \centering
+% \includegraphics{../model/output/full/fig_lam.pdf}
+% \caption{\label{fig:lam}
+% Temporal variation in fitness $\lambda$ for each basin.
+% Fitness corresponds to the asymptotic per capita population growth rate
+% calculated from the annual projection matrix for each basin excluding movement.
+% A fitness of one (thin horizontal line) indicates zero change 
+% in the asymptotic population size for the corresponding basin.
+% }
+% \end{figure}
+% 
+% \clearpage
+% 
+% \begin{figure}
+% \centering
+% \includegraphics{../model/output/full/fig_r0.pdf}
+% \caption{\label{fig:r0}
+% Expected lifetime reproductive output $R_0$ of adults for each basin.
+% $R_0$ was calculated from the annual projection matrix for each basin excluding movement
+% and corresponds with the fitnesses shown in Figure \ref{fig:lam}.
+% We excluded $R_0$ for juveniles, as it is fixed at 1 through time as a consequence
+% of the their non-reproductive status.
+% }
+% \end{figure}
+% 
+% \clearpage
+% 
+% \begin{figure}
+% \centering
+% \includegraphics{../model/output/full/fig_dist.pdf}
+% \caption{\label{fig:dist}
+% Stable age distribution for each basin.
+% The distribution was calculated from the annual projection matrix
+% for each basin excluding movement
+% and corresponds with the fitnesses shown in Figure \ref{fig:lam}.
+% The relative contributions within a basin sum to one,
+% which means that the relative contributions for the different life stages are mirror images 
+% of each other.
+% }
+% \end{figure}
+% 
+% \clearpage
+% 
+% \begin{figure}
+% \centering
+% \includegraphics{../model/output/full/fig_elas.pdf}
+% \caption{\label{fig:elas}
+% Elasticity of fitness with respect to different life stages.
+% The elasticities were calculated from the annual projection matrix 
+% for each basin excluding movement
+% and corresponds with the fitnesses shown in Figure \ref{fig:lam}.
+% Elasticites quantify the sensitivity of fitness to small perturbations to 
+% elements of the annual projection matrix scaled so that demographic rates with 
+% different scales (e.g. mortality and fertility) can be compared to each other.
+% For a given year and basin, the elasticities across all demographic rates sum to one,
+% which means that the elasticities for the different life stages are mirror images 
+% of each other.
+% }
+% \end{figure}
+
+\clearpage
+
+\clearpage
+
+\end{document}
+

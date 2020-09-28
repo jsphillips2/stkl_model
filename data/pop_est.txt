@@ -1,0 +1,70 @@
+
+### Data
+
+# y : observed trap counts
+# x : model matrix for detection probabilities 
+# n_j : number of columns in model matrix
+# n_k : number of rows in model matrix 
+# n_nu  : number of station estimates 
+# n_lam : number of basin estimates 
+# lam_nu : mapping basin to station abundance 
+# nu_y : mapping station abundance to observed trap counts
+# u_lam : prior for abundance mean
+# u_beta : prior coefficient mean
+# s_beta : prior coeficient sd
+
+
+
+### Parameters
+
+# lam : mean basin abundance
+# nu : station abundance
+# beta : coefficients for 'logistic regression' modeling of detection probabilities
+# betas : mapping of betas to rows in model matrix (replacing intercepts with 0)
+# alpha : summed coefficients (with first beta as intercept)
+# phi : detection probability (inverse logit transform of alpha)
+
+
+
+### Model
+
+model {
+  
+  # basin abundance
+  for (i in 1:n_lam) {
+    lam[i] ~ dexp(1 / u_lam)
+  } # i
+  
+  
+  
+  # station abundance
+  for (i in 1:n_nu) {
+    nu[i] ~ dpois(lam[lam_nu[i]])
+  } # i
+  
+  
+  
+  # coefficients for detection probability
+  for (i in 1:n_j) {
+    beta[i] ~ dnorm(u_beta, 1/pow(s_beta, 2))
+  } # i
+  
+  
+  
+  # linear predictor for detection probability
+  alpha <- x %*% beta
+  
+  
+  
+  # detection probability
+  for( k in 1:n_k){
+    phi[k] = exp(alpha[k])/(1 + exp(alpha[k]))
+  }
+  
+  
+  
+  # observation process ('likelihood')
+  for (i in 1:length(y)) {
+    y[i] ~ dbinom(phi[phi_y[i]], nu[nu_y[i]])
+  } # i
+}
