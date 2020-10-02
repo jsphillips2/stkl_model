@@ -12,7 +12,7 @@ rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores()-2)
 
 # import and process data
-source("files/prepare_data.R")
+source("model/prepare_data.R")
 
 # set theme
 theme_set(theme_bw() %+replace%
@@ -140,16 +140,13 @@ y_scale <- mean(yy)
 y <- yy / y_scale
 
 # extract season
-b <- data_prep %>% 
+b <- {data_prep %>% 
   filter(stage == "small",basin == "north") %>%
-  mutate(b1 = as.numeric(factor(season)) - 1,
-         b2 = c(diff(time), 0)) %>%
-  filter(time < max(time)) %>%
-  select(b1, b2) %>%
-  as.matrix()
+  mutate(b = c(diff(time), 0)) %>%
+  filter(time < max(time))}$b
 
 # priors
-p <- c(1, 2, 2, 2, 2, 2)
+p <- c(2, 2, 2, 2)
 
 # package data
 data_list <- list(n = n,
@@ -172,28 +169,28 @@ models <- c("multi_state")
 model <- models[1]
 
 # model
-model_path <- paste0("files/",model,".stan")
+model_path <- paste0("model/",model,".stan")
 
 
 # MCMC specifications (for testing)
-chains <- 1
-iter <- 300
+chains <- 4
+iter <- 100
 adapt_delta <- 0.8
 max_treedepth <- 10
 
 # MCMC specifications
 # chains <- 4
-# iter <- 3000
-# adapt_delta <- 0.95
-# max_treedepth <- 12
+# iter <- 300
+# adapt_delta <- 0.9
+# max_treedepth <- 11
 
 # fit model
-# start_time <- Sys.time()
-# fit <- stan(file = model_path, data = data_list, seed=2e3,
-#             chains = chains, iter = iter,
-#             control = list(adapt_delta = adapt_delta, max_treedepth = max_treedepth))
-# end_time <- Sys.time()
-# end_time - start_time
+start_time <- Sys.time()
+fit <- stan(file = model_path, data = data_list, seed=2e3,
+            chains = chains, iter = iter,
+            control = list(adapt_delta = adapt_delta, max_treedepth = max_treedepth))
+end_time <- Sys.time()
+end_time - start_time
 
 fit_summary = rstan::summary(fit, probs=c(0.16, 0.5, 0.84))$summary %>%
   {as_tibble(.) %>%
@@ -257,7 +254,7 @@ out <- list(data_prep = data_prep,
             fit_summary = fit_summary)
 
 # export
-# saveRDS(out,  "output/fit_adult_b.rds")
+# saveRDS(out,  "output/fit_full.rds")
 
 
 

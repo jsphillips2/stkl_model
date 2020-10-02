@@ -13,37 +13,37 @@ source("figures/fig_setup.R")
 #==========
 
 # extract variable names
-qt_vars <- {fit_summary %>%
-    filter(str_detect(fit_summary$var, "qt"))}$var
+dt_vars <- {fit_summary %>%
+    filter(str_detect(fit_summary$var, "dt"))}$var
 
 # extract survival
-qt_full <- rstan::extract(fit, pars = qt_vars) %>%
+dt_full <- rstan::extract(fit, pars = dt_vars) %>%
   lapply(as_tibble) %>%
   bind_cols() %>%
-  set_names(qt_vars) %>%
+  set_names(dt_vars) %>%
   mutate(chain = rep(1:out_in$mcmc_specs$chains, each = iter/2), 
          step = rep(c(1:(out_in$mcmc_specs$iter/2)), chains),
          chain_step = paste(chain,step, sep="_")) %>%
   sample_n(4000) %>%
-  gather(var, qt, -chain, -step, -chain_step) %>%
+  gather(var, dt, -chain, -step, -chain_step) %>%
   mutate(name = str_split(var, "\\[|\\]|,") %>% map_chr(~as.character(.x[1])),
          st = str_split(var, "\\[|\\]|,") %>% map_int(~as.integer(.x[2])),
          time = str_split(var, "\\[|\\]|,") %>% map_int(~as.integer(.x[3])),
          date = date_match[time],
-         b = data_list$b[time]) %>%
-  full_join(state_match)
+         b = data_list$b[time],
+         basin = levels(state_match$basin)[st])
 
 # calculate monthly survival
-surv_month <- qt_full %>%
-  mutate(p = exp(-mean(b) * qt),
-         p_se = exp(-b * qt),
+move_month <- dt_full %>%
+  mutate(p = 1 - exp(-mean(b) * dt),
+         p_se = 1 - exp(-b * dt),
          month = lubridate::month(date),
          season = factor(ifelse(month < 8, 0, 1),
                          levels = c(0, 1),
                          labels = c("summer", "winter"))) %>%
-  select(chain_step, date, season, basin, stage, state, p, p_se) %>%
+  select(chain_step, date, season, basin, p, p_se) %>%
   gather(var, val, p, p_se) %>%
-  group_by(var, basin, stage, state, season, date) %>%
+  group_by(var, basin,season, date) %>%
   summarize(lo = quantile(val, prob = 0.16),
             mi = quantile(val, prob = 0.5),
             hi = quantile(val, prob = 0.84))
@@ -56,25 +56,23 @@ surv_month <- qt_full %>%
 #==========
 
 # plot
-p1 <- ggplot(data = surv_month %>% 
+p1 <- ggplot(data = move_month %>% 
                filter(var == "p"),
              aes(x = date,
                  y = mi,
                  color = basin))+
-  facet_rep_wrap(~stage,
-                 nrow = 2)+
   geom_hline(yintercept = 0.5,
              size = 0.2,
              color = "gray50",
              linetype = 2)+
-  geom_line(data = surv_month %>% 
+  geom_line(data = move_month %>% 
               filter(var == "p_se"),
             size = 0.2,
             alpha = 0.5)+
   geom_line(size = 0.4)+
   scale_color_manual(name = "",
                      values = basin_colors)+
-  scale_y_continuous(name = Survival~probability, 
+  scale_y_continuous(name = Dispersal~probability, 
                      breaks = c(0, 0.5, 1), 
                      limits = c(0, 1))+
   scale_x_date(name = "Date",

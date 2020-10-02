@@ -51,22 +51,17 @@ year_limits = c(1990, 2020)
 #========== Import data
 #==========
 
-
-# import path
-name <- "full"
-
 # main output
-out_in <- readRDS(
-  paste0("analysis/demographic_model/model/output/",name,"/fit.rds"))
+out_in <- readRDS("output/fit_full.rds")
 
 # annual projections
-proj_sum <-read_rds(paste0("analysis/demographic_model/model/output/",name,"/proj_sum.rds"))
-n_sum <- proj_sum$n_sum %>%
-  mutate(year = (1991:2020)[time])
-sens_sum <- proj_sum$sens_sum %>%
-  mutate(year = (1991:2020)[time])
-aa_sum <- proj_sum$aa_sum %>%ungroup()
-aa_cont_sum <- proj_sum$aa_cont_sum %>% ungroup()
+# proj_sum <-read_rds(paste0("analysis/demographic_model/model/output/",name,"/proj_sum.rds"))
+# n_sum <- proj_sum$n_sum %>%
+#   mutate(year = (1991:2020)[time])
+# sens_sum <- proj_sum$sens_sum %>%
+#   mutate(year = (1991:2020)[time])
+# aa_sum <- proj_sum$aa_sum %>%ungroup()
+# aa_cont_sum <- proj_sum$aa_cont_sum %>% ungroup()
 
 
 
