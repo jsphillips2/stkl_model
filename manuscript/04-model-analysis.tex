@@ -1,0 +1,94 @@
+
+
+\section*{Model fit} \label{fit}
+
+%========================================================================================
+
+\clearpage
+
+\begin{figure}
+\centering
+\includegraphics{../figures/figs/fig_fit.pdf}
+\caption{\label{fig:fit}
+Model fit
+}
+\end{figure}
+
+\clearpage
+
+\clearpage
+
+\begin{figure}
+\centering
+\includegraphics{../figures/figs/fig_rec.pdf}
+\caption{\label{fig:fit}
+Model fit
+}
+\end{figure}
+
+\clearpage
+
+\clearpage
+
+\begin{figure}
+\centering
+\includegraphics{../figures/figs/fig_surv.pdf}
+\caption{\label{fig:fit}
+Model fit
+}
+\end{figure}
+
+\clearpage
+
+%========================================================================================
+
+\section*{Annual dynamics} \label{annual}
+
+While we parameterized the model in terms of continuous rates
+to accommodate the seasonal nature of the data,
+we focused our demographic analysis on the annual projection matrix, 
+defined as 
+%
+\begin{equation} \label{eq:A}
+\mathbf{A}_y = \mathbf{P}_{t[y]+1} \mathbf{P}_{t[y]}
+\end{equation}
+%
+for year $y$ and sequential time steps within that year $t[y]$ and $t[y]+1$,
+with the year defined to start with the June/July census.
+$\mathbf{A}_y$ projects the dynamics from
+June/July of one year to June/July of the next year.
+Analyzing the annual projection matrix allowed us to circumvent interpretational
+issues that arose from unequal sampling intervals within years
+and aligned with the annual nature of spawning for M\'{y}vatn stickleback.
+To characterize the contribution of different demographic processes 
+to the population dynamics,
+we calculated the annual contribution of each stage $\times$ basin combination 
+to each other stage $\times$ basin combination in the next year as
+%
+\begin{equation} \label{eq:A}
+\mathbf{C}_y = \mathbf{A}_y~{\circ}~\mathbf{X}_{t[y]}
+\end{equation}
+%
+where $\mathbf{C}_{y}$ is a $4\times 4$ matrix of annual contributions,
+$\mathbf{X}_{t[y]}$ is a $4\times 4$ matrix 
+with idententical rows ${\mathbf{x}_{t[y]}}^\text{T}$,
+and ${\circ}$ denotes the Hadamard (element-wise) product. 
+This is essentially the same operation as a standard demographic projection
+(e.g., equation \ref{eq:XPX}) but without summing the contributions to a given state
+from different sources states. 
+
+
+We characterized the overall dynamics of the population in terms of the annual 
+population growth rate $\lambda_y$, calculated as
+%
+\begin{equation} \label{eq:lam-n}
+\lambda_y = \frac{N_y}{N_{y-1}}
+\end{equation}
+%
+where $N_y$ is the summed abundance across basins and life stages in year $y$.
+Temporal variation in $\lambda_y$ reflects both variation in the demographic rates
+and transient fluctuations due to non-equilibrium state distribution. 
+Therefore, it is also informative to calculate the asymptotic population growth rate that 
+would obtian if the demographic rates in a given year were fixed indefinitely, 
+which is equal to the leading eigenvalue of $\mathbf{A}_y$. }
+

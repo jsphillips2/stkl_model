@@ -1,0 +1,214 @@
+
+\section*{Demographic model} \label{model}
+
+%========================================================================================
+
+We used a multiregional stage-structured model with time-varying demographic rates
+to characterize the dynamics of the stickleback population. 
+The model projected the population dynamics due to 
+within-basin recruitment, survival, and development, 
+as well as dispersal between basins. 
+Recruitment, survival, and dispersal were allowed to vary through time,
+enabling the model to characterize a range of dynamics, 
+including those implicitly due to endogenous (e.g., density dependence) 
+and exogenous (e.g, environmental variation) processes. 
+We estimated the demographic rates by  
+fitting the model to the time series of abundance estimates. 
+
+For a given time interval from $t-1$ to $t$, 
+the structured population dynamics were projected as
+%
+\begin{equation} \label{eq:XPX}
+    \mathbf{x}_t = \mathbf{P}_{t-1}~\mathbf{x}_{t-1}
+\end{equation}
+%
+where $\mathbf{P}_{\tau}$ is 4 $\times$ 4 a matrix of demographic rates at time $\tau$, 
+and $\mathbf{x}_{\tau}$ is a vector abundances 
+for a given stage (juveniles $j$; adults $a$) 
+and basin (south $s$; north $n$):
+%
+\begin{equation} \label{eq:X}
+\mathbf{x}_{\tau} = 
+\left[
+\begin{array}{cccc}
+    {x_{j,s,\tau}} \\
+    {x_{a,s,\tau}} \\
+    {x_{j,n,\tau}} \\
+    {x_{a,n,\tau}}
+    \end{array}
+\right]
+\text{.}
+\end{equation}
+%
+The projection matrix $\mathbf{P}_{\tau}$ can be expressed as
+%
+\begin{equation} \label{eq:P}
+\mathbf{P}_{\tau} = 
+\left[
+\begin{array}{c|ccc}
+    \mathbf{W}_{s,\tau}  & \mathbf{B}_{s\rightarrow n,\tau} \\
+    \hline
+    \mathbf{B}_{n\rightarrow s,\tau} & \mathbf{W}_{n,\tau}
+    \end{array}
+\right]
+\end{equation}
+%
+where $\mathbf{W}_{i,\tau}$ is a 2 $\times$ 2 matrix characterizing 
+per capita contributions within basin $i$,
+and $\mathbf{B}_{i\rightarrow k,\tau}$ is a 2 $\times$ 2 matrix characterizing 
+contributions from basin $i$ to basin $k$.
+Within-basin contributions were modeled as 
+ %
+\begin{equation} \label{eq:W}
+\mathbf{W}_{i,\tau} = 
+\left[
+\begin{array}{cccc}
+    \phi_{j,i,\tau}~(1-\gamma_{j}) & 
+    \rho_{i,\tau} \\
+    \phi_{j,i,\tau}~\gamma_{j}~(1-\delta_{a,i,\tau}) & 
+    \phi_{a,i,\tau}~(1-\delta_{a,i,\tau})
+    \end{array}
+\right]
+\end{equation}
+%
+where $\phi_{h,i,\tau}$ is the survival probability of life-stage $h$, 
+$\gamma_{j}$ is the proportion of surviving juveniles that develop into adults,
+$\delta_{a,i,\tau}$ is the proportion of surviving adults that disperse to the other basin,
+and $\rho_{i,\tau}$ is per capita recruitment.
+We modeled between-basin contributions as
+%
+\begin{equation} \label{eq:B}
+\mathbf{B}_{i,\tau} = 
+\left[
+\begin{array}{cccc}
+    0 & 
+    0 \\
+    
+    \phi_{j,i,\tau}~\gamma_{j}~\delta_{a,i,\tau} & 
+    \phi_{a,i,\tau}~\delta_{a,i,\tau}
+    \end{array}
+\right].
+\end{equation}
+%
+We fixed $\gamma_{j}$ to a singe value for both basins and through time because 
+it was difficult to statistically separate changes in development from changes 
+in survival probability.
+This is unsurprising, as both survival and development probabilities
+deteremined the contribution of juveniles to the adult age class,
+and the development probability was sufficiently 
+high that few juveniles returned to the juvenile class at the next time step. 
+Similarly, we assumed that only individuals that were adults at the end of the projection
+interval dispersed, because a model allowing juveniles to disperse failed to detect 
+a meaningful signature of juvenile dispersal 
+(again due to the high probability of development over the course of a projection interval).
+Taken literally, the model implies that individuals born in a given basin
+remain within that basin until the next time step.
+However, any recruitment across basins should largely manifest 
+as additional temporal variability in the within-basin recruitment,
+and therefore is implicitly accommodated by the model.
+
+To accommodate the unequal duration of the the summer (2-3 months) and winter (9-10 month)
+intervals, we modeled the transition probabilities 
+($\phi_{h,i,\tau}$, $\gamma_{j}$, and $\delta_{a,i,\tau}$)
+in terms of latent transition rates $\theta^{\alpha}_{\tau}$ 
+(where $\alpha$ denotes the corresponding demographic parameter).
+For each class of transition process (mortality, development, and dispersal),
+we specified a transition matrix from which we could then calculate
+the probability of transition over a given interval $\Delta T$ 
+(see Appendix \ref{sec:A1}).
+We did not explicitly model unequal projection intervals for reproduction,
+as spawning was not evenly spread throughout the year but instead was concentrated
+in the summer (but spanned the ``summer'' and ``winter'' sampling periods).
+
+We modeled temporal variation in demographic rates
+(including for $\alpha$ = $\rho_{i,\tau})$ using random walks:
+%
+\begin{equation} \label{eq:theta}
+    \theta^{\alpha}_t & \sim \text{Normal}
+        \left(
+            \theta^{\alpha}_{t-1},~\sigma_{g[\alpha]}}
+        \right) \text{T}(0, \infty)
+\end{equation}
+%
+with standard deviation $\sigma_{g[\alpha]$ and 
+truncated from the left to ensure that values remained positive. 
+The function $g$ maps $\alpha$ to a given type of demographic process 
+(reproduction, mortality, or dispersal),
+such that a single random walk standard deviation was used 
+for each type of demographic process.
+While formulated as random walks, 
+the realized sequences of inferred demographic rates 
+were not truly random walks because they were constrained by fitting the model to data.
+Therefore, the ``random walks'' are best understood as a convenient method 
+for allowing the demographic rates to vary through time with implicit ``smoothing''
+arising from the autocorrelated nature of the walks.
+
+We fit the model in a Bayesian framework, 
+using the abundance estimates from the trapping data. 
+The likelihood of the ``observed'' abundance given the projected abundances 
+and standard deviation $\sigma_y$ was calculated as
+%
+\begin{equation} \label{eq:likelihood}
+\mathcal{L} = 
+\displaystyle\prod_{h}
+\displaystyle\prod_{i}
+\displaystyle\prod_{\tau}
+\text{Normal}
+    \left(
+        y_{h,i,\tau}~|~x_{h,i,\tau},~\sigma_y
+    \right).
+\end{equation}
+%
+For population densities that are necessarily non-negative, 
+it is common to model the likelihood using a distribution that is similarly constrained,
+such as a log-normal distribution. 
+However, the multiplicative nature of population processes is already entailed 
+in the population projection, 
+and a log-normal likelihood reduces the relative contribution of large population sizes
+that likely reflect meaningful dynamics.
+Therefore, we opted for a normal (Gaussian) likelihood. 
+Because the model was parameterized in a way that ensured
+$x_{h,i,t}$ was non-negative,
+the posterior distribution of $x_{h,i,t}$ was also guaranteed to be non-negative. 
+We used gamma priors with shape parameter 1.5 and scale parameter 0.75
+for the initial population size for each stage $\times$ basin combination, 
+initial values for random walks,
+and standard deviations for the random walks and likelihood.
+A gamma distribution with shape parameter of 1.5 has zero density at zero 
+and is concave down as it approaches its mode,
+allowing the posterior to be arbitrarily close to zero 
+while not being artificially drawn towards it.
+This shape parameter, along with scale parameter of 0.75,
+implies a mean of 2, 
+which defines a reasonable scale for all of the parameters 
+following the scaling of the population estimates (see below)
+
+We fit the model using Stan 2.19 run from R 4.0.0
+with the ‘rstan’ package.
+To facilitate selection of prior parameterizations,
+we scaled the observed data by dividing by the mean,
+such that the resulting in data that had a mean of 1
+and ranged from approximately 0 to 11.
+We fit the model with 4 chains, 
+15000 iterations (7500 of warm-up and 7500 of sampling),
+and set the ``adapt-delta'' parameter to 0.9.
+Convergence was assessed by the number of divergent transitions 
+and the potential scale reduction factor (\^{R}),
+which quantifies the relative variance within and between chains. 
+To assess the extent to which the data supported statistically meaningful inferences
+of temporal variation in demographic rates,
+we compared the fit of the model to a reduced version will all demographic rates
+fixed through time 
+(while still accounting for the unequal projection interval for transition probabilities).
+We assessed goodness-of-fit using two metrics: 
+(a) the posterior median of the logarithm 
+of the likelihood given by equation \ref{eq:likelihood}
+and (b) the ``Leave-one-out Information Criterion'' or LOOIC, 
+which is analogous to the Akaike Information Criterion (AIC)
+and can be interpreted in a similar manner.
+The full model had a much higher log-likelihood and much lower LOOIC than the 
+reduced model, 
+indicating that allowing temporal variation in demographic rates provided a
+substantially improved fit to the data.
+
+
