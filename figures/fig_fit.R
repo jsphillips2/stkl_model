@@ -2,7 +2,7 @@
 #========== Preliminaries
 #==========
 
-source("analysis/demographic_model/model/figures/fig_setup.R")
+source("figures/fig_setup.R")
 
 
 
@@ -72,8 +72,8 @@ p1 <-  ggplot(data = x_clean,
                     guide = F)+
   scale_y_continuous(name = Relative~abundance,
                      limits = c(0, 12),
-                     breaks = c(2,6,10))+
-  scale_x_date(name = "Year",
+                     breaks = c(0, 3, 6, 9))+
+  scale_x_date(name = "Date",
                limits = date_limits,
                breaks = date_breaks,
                labels = year_breaks)+
@@ -95,7 +95,7 @@ p1 <-  ggplot(data = x_clean,
 p1
 
 # export
-# cairo_pdf(file = "analysis/demographic_model/model/figures/figs/fig_fit.pdf",
+# cairo_pdf(file = "figures/figs/fig_fit.pdf",
 #           width = 3.5, height = 3.5, family = "Arial")
 # p1
 # dev.off()

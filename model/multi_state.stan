@@ -63,8 +63,8 @@ data {
   matrix <lower = 0> [n, nt] y; // observed abundance
   int <lower = 0> j[8]; // number of positions for each demographic parameter
   int <lower = 0> pj [n * n, 3, 8]; // position array for rates
-  matrix [nt - 1, 2] b; // season index and tim step sizes 
-  real p[6]; // values for priors
+  vector [nt - 1] b; // season index and tim step sizes 
+  real p[4]; // values for priors
 
 }
 
@@ -81,14 +81,12 @@ parameters {
   matrix <lower = 0> [j[3], nt - 1] qt; // transition rate
   vector <lower = 0> [j[4]] qf; // transition rate (fixed)
   matrix <lower = 0> [j[5], nt - 1] gt; // transition rate
-  vector <lower = 0> [j[6]] gf; // transition rate (fixed)
+  vector <lower = 0> [j[6]] gf; // transition rate (fixed) 
   matrix <lower = 0> [j[7], nt - 1] dt; // movement rate
   vector <lower = 0> [j[8]] df; // movement rate (fixed)
   real <lower = 0> ys; // standard deviation for likelihood
   real <lower = 0> rs; // scale for recruitment random walk
-  real <lower = 0> qs; // scale for transition / movement rate random walk
-  real <lower = 0> gs; // scale for transition / movement rate random walk
-  real <lower = 0> ds; // scale for transition / movement rate random walk
+  real <lower = 0> ps; // scale for transition / movement rate random walk
 
 }
 
@@ -100,18 +98,13 @@ transformed parameters {
   
   // declare variables
   matrix [n, nt] x; // abundance
-  real QQ [n, n, nt - 1] ; // transition matrix (to store)
-  real GG [n, n, nt - 1] ; // transition matrix (to store)
-  real DD [n, n, nt - 1] ; // movement matrix (to store)
-  real RR [n, n, nt - 1] ; // recruitment matrix (to store)
-  real AA [n, n, nt - 1] ; // full projection matrix (to store)
   
   
   
   // initial abundance
   x[, 1] = x0; 
   
-  
+   
   
   // generate demographic matrices and project dynamics
   {
@@ -204,18 +197,14 @@ transformed parameters {
       
       
       // calculate transition probability matrix from transition rate matrix
-      Q = trans_prob(b[t - 1, 2] * qs * (Qt + Qf)); 
-      G = trans_prob(b[t - 1, 2] * gs * (Gt + Gf)); 
-      D = trans_prob(b[t - 1, 2] * ds * (Dt + Df));
-      R = rs * (Rt + Rf);
+      Q = trans_prob(b[t - 1] * (Qt + Qf)); 
+      G = trans_prob(b[t - 1] * (Gt + Gf)); 
+      D = trans_prob(b[t - 1] * (Dt + Df));
+      R = Rt + Rf;
       
       // projection matrix
       A =  R + (D * G * Q);
-      QQ[, , t - 1] = to_array_2d(Q);
-      GG[, , t - 1] = to_array_2d(G);
-      DD[, , t - 1] = to_array_2d(D);
-      RR[, , t - 1] = to_array_2d(R);
-      AA[, , t - 1] = to_array_2d(A);
+
       
       // project dynamics
       x[, t] = A * x[, t - 1]; 
@@ -232,31 +221,29 @@ transformed parameters {
 model {
   
   // scales
-  ys ~ exponential(1 / p[1]); 
-  rs ~ exponential(1 / p[2]); 
-  qs ~ exponential(1 / p[3]);
-  gs ~ exponential(1 / p[4]);
-  ds ~ exponential(1 / p[5]);
+  ys ~ gamma(1.5, 1.5 / p[1]); 
+  rs ~ gamma(1.5, 1.5 / p[2]); 
+  ps ~ gamma(1.5, 1.5 / p[3]);
   
   // fixed rates
   if(j[2] > 0) {
     for (i in 1:j[2]) {
-      rf[i] ~ exponential(1); 
+      rf[i] ~ gamma(1.5, 1.5 / p[2]); 
     }
   }
   if(j[4] > 0) {
     for (i in 1:j[4]) {
-      qf[i] ~ exponential(1); 
+      qf[i] ~ gamma(1.5, 1.5 / p[3]); 
     }
   }
   if(j[6] > 0) {
     for (i in 1:j[6]) {
-      gf[i] ~ exponential(1); 
+      gf[i] ~ gamma(1.5, 1.5 / p[3]); 
     }
   }  
   if(j[8] > 0) {
     for (i in 1:j[8]) {
-      df[i] ~ exponential(1); 
+      df[i] ~ gamma(1.5, 1.5 / p[3]); 
     }
   }  
   
@@ -267,40 +254,40 @@ model {
         if (j[1] > 0) {
           for (i in 1:j[1]) {
             if (t == 1) {
-              rt[i, t] ~ exponential(1); 
+              rt[i, t] ~ gamma(1.5, 1.5 / p[2]); 
             }
             if (t > 1 && t < nt) {
-              rt[i, t] ~ normal(rt[i, t - 1], 1) T[0, ]; 
+              rt[i, t] ~ normal(rt[i, t - 1], rs) T[0, ]; 
             }
           } // i
         }
         if (j[3] > 0) {
           for (i in 1:j[3]) {
             if (t == 1) {
-              qt[i, t] ~ exponential(1); 
+              qt[i, t] ~ gamma(1.5, 1.5 / p[3]); 
             }
             if (t > 1 && t < nt) {
-              qt[i, t] ~ normal(qt[i, t - 1], 1) T[0, ]; 
+              qt[i, t] ~ normal(qt[i, t - 1], ps) T[0, ]; 
             }
           } // i
         }
         if (j[5] > 0) {
           for (i in 1:j[5]) {
             if (t == 1) {
-              gt[i, t] ~ exponential(1); 
+              gt[i, t] ~ gamma(1.5, 1.5 / p[3]); 
             }
             if (t > 1 && t < nt) {
-              gt[i, t] ~ normal(gt[i, t - 1], 1) T[0, ]; 
+              gt[i, t] ~ normal(gt[i, t - 1], ps) T[0, ]; 
             }
           } // i
         }
         if (j[7] > 0) {
           for (i in 1:j[7]) {
             if (t == 1) {
-              dt[i, t] ~ exponential(1); 
+              dt[i, t] ~ gamma(1.5, 1.5 / p[3]); 
             }
             if (t > 1 && t < nt) {
-              dt[i, t] ~ normal(dt[i, t - 1], 1) T[0, ]; 
+              dt[i, t] ~ normal(dt[i, t - 1], ps) T[0, ]; 
             }
           } // i
         }  
@@ -311,14 +298,14 @@ model {
   
   // initial abundance
   for (i in 1:n) {
-    x0[i] ~ exponential(1 / p[5]); 
+    x0[i] ~ gamma(1.5, 1.5 / p[4]);
   } // i
   
   
   
   // likelihood
   for (i in 1:n){
-    y[i, ] ~ normal(x[i, ], ys); 
+    y[i, 1:nt] ~ normal(x[i, 1:nt], ys); 
   } // i
 
   
