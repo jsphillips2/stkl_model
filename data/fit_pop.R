@@ -33,7 +33,7 @@ theme_set(theme_bw() %+replace%
 ### Primary data
 
 # import abundance data
-abundance <- read_csv("data/clean_data/counts89_20.csv") %>%
+abundance <- read_csv("data/counts89_20.csv") %>%
   filter(station != "BV") %>%
   mutate(basin = ifelse(basin == "east", "south", basin),
          basin = factor(basin, levels = c("north","south")),
@@ -155,7 +155,7 @@ init_fn <- function(){
 ### Fit model
 
 # file path for model
-model_path <- "analysis/population_estimate/pop_est.txt"
+model_path <- ""data/"pop_est.txt"
 
 # variables to monitor
 # monitor <- c("u_lam","s_lam","lam","nu","beta","phi")
@@ -183,7 +183,7 @@ monitor <- c("lam","nu","beta","phi")
 # end_time - start_time
 
 # export fit
-# saveRDS(fit, paste0("analysis/population_estimate/fit.rds"))
+# saveRDS(fit, paste0(""data/"fit.rds"))
 
 # check diagnostic
 psrf_check <- coda::gelman.diag(fit$mcmc)
@@ -215,7 +215,7 @@ fit_sum <- fit$mcmc %>%
             upper95 = quantile(val, probs = 0.975)) 
 
 # export summary
-# write_csv(fit_sum, paste0("analysis/population_estimate/fit.csv"))
+# write_csv(fit_sum, paste0(""data/"fit.csv"))
 
 
 
@@ -228,8 +228,8 @@ fit_sum <- fit$mcmc %>%
 
 
 ### Import data
-# fit <- readRDS(paste0("analysis/population_estimate/fit.rds"))
-# fit_sum <- read_csv("analysis/population_estimate/fit.csv")
+# fit <- readRDS(paste0(""data/"fit.rds"))
+# fit_sum <- read_csv(""data/"fit.csv")
 
 ### MCMC chains
 bayesplot::mcmc_trace(x = fit$mcmc,
@@ -318,7 +318,7 @@ data_prep %>%
   scale_shape_manual("", values = 1:8)
 
 # export estimate
-# write_csv(l_fit, "analysis/population_estimate/pop_est.csv")
+# write_csv(l_fit, ""data/"pop_est.csv")
 
 
 
