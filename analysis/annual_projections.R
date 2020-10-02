@@ -11,9 +11,7 @@ options(mc.cores = parallel::detectCores()-4)
 
 
 # import model
-name <- "full"
-out_in <- readRDS(
-  paste0("analysis/demographic_model/model/output/",name,"/fit.rds"))
+out_in <- readRDS(paste0("output/fit_full.rds"))
 
 
 #==========
@@ -69,7 +67,7 @@ A <-  rstan::extract(fit, pars = A_vars) %>%
   mutate(chain = rep(1:out_in$mcmc_specs$chains, each = iter/2), 
          step = rep(c(1:(out_in$mcmc_specs$iter/2)), chains),
          chain_step = paste(chain,step, sep="_")) %>%
-  sample_n(250) %>%
+  sample_n(4000) %>%
   gather(var, value, -chain, -step, -chain_step) %>%
   mutate(name = str_split(var, "\\[|\\]|,") %>% map_chr(~as.character(.x[1])),
          row = str_split(var, "\\[|\\]|,") %>% map_int(~as.integer(.x[2])),
@@ -487,7 +485,7 @@ proj_sum <- list(n_sum = n_sum,
                  sens_sum = sens_sum,
                  var_sum = var_sum)
 # write_rds(proj_full,
-#           paste0("analysis/demographic_model/model/output/",name,"/proj.rds"))
+#           paste0("analysis/proj.rds"))
 # write_rds(proj_sum,
-#           paste0("analysis/demographic_model/model/output/",name,"/proj_sum.rds"))
+#           paste0("analysis/proj_sum.rds"))
 
