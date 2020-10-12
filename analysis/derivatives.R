@@ -18,7 +18,9 @@ W <- matrix(c("s1w*(1-g1w)",       "r1w",               "0",                 "0"
 
 SS <- ysym(S)
 WW <- ysym(W)
-SS %*% WW
+NN <- ysym(N)
+
+SSWW <- WW %*% SS
 
 pars <- c("s1s",
           "s2s",
@@ -35,11 +37,16 @@ pars <- c("s1s",
           "d1w",
           "d2w")
 
-SSWW <- SS %*% WW
+
 
 derivs <- deriv(SSWW,
                 pars)
 
 
+N <- c("x1","x2","x3","x4")
 
 
+L <- sum(WW %*% SS * N) / sum(NN)
+
+L_derivs <- deriv(L,
+                c(pars, N))
