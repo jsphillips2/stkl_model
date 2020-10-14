@@ -1,4 +1,4 @@
-### define variables to differential with respect to 
+### define variables to differentiate with respect to 
 theta_names <- c("r1s","r2s",
                "s1s","s2s","s3s","s4s",
                "g1s","d1s","d2s",

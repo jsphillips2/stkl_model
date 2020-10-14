@@ -1,9 +1,27 @@
+#==========
+#========== Preliminaries
+#==========
+
 # load packages
 library(tidyverse)
 library(Matrix)
 library(matrixcalc)
+source("analysis/population_projection_functions.R")
 
 options(mc.cores = parallel::detectCores()-4)
+
+# set theme
+theme_set(theme_bw() %+replace%
+            theme(panel.grid = element_blank(),
+                  strip.background = element_blank(),
+                  legend.margin = margin(0,0,0,0),
+                  strip.text = element_text(size=18),
+                  legend.text = element_text(size=18),
+                  axis.text=element_text(size=18, color="black"),
+                  axis.title = element_text(size = 18),
+                  axis.title.y=element_text(angle = 90 ,margin=margin(0,15,0,0)),
+                  axis.title.x=element_text(margin=margin(15,0,0,0))))
+
 
 
 # import model
@@ -46,90 +64,64 @@ extract_full <-  rstan::extract(fit, pars = vars) %>%
          row = str_split(var, "\\[|\\]|,") %>% map_int(~as.integer(.x[2])),
          col = str_split(var, "\\[|\\]|,") %>% map_int(~as.integer(.x[3])))
 
-# select row
-id_ <- 50
-
-extract <- extract_full %>%
-  filter(id == id_)
 
 
 
+#==========
+#========== Iterate
+#==========
 
+# iterations of MCMC
+ids <- unique(extract_full$id)[1:128]
 
-
-
-plot(colSums(x), type = "l", ylim = c(0, 17))
-points(colSums(data_list$y))
-
-years_unique <- unique(years)
-ny <- length(years_unique)
-
-
-aa <- lapply(1 : (ny - 1), function(i_){
-  ts <- sort(which(years == years_unique[i_]), decreasing = T)
+start_time <- Sys.time()
+annual_output <- parallel::mclapply(ids, function(id_){
   
-  Reduce("%*%", 
-         lapply(ts, function(t_){AA[,,t_]}))
+  # extract data corresponding to iteration
+  extract_ <- extract_full %>%
+    filter(id == id_)
   
-})
-
-aa_array <- aa %>% unlist() %>% array(dim = c(n, n, (ny - 1)))
-
-n_proj <- array(0, dim = c(n, ny - 1))
-
-n_proj[, 1] <- x[, 1]
-
-for (y in 2 : (ny - 1)) {
+  # project annual dynamics
+  annual_proj <- annual_proj_fn(extract_ = extract_, 
+                                pj_ = pj, 
+                                nt_ = nt, 
+                                n_ = n, 
+                                b_ = b, 
+                                years_ = years, 
+                                theta_names_ = theta_names) 
   
-  n_proj[, y] <- aa_array[, , y - 1] %*% n_proj[, y - 1]
   
-}
+  # project population size derivatives over 1 time step
+  dX <- dX_fn(annual_proj_ = annual_proj, 
+              ip_ = 1)
+  
+  # project population size derivatives over many time steps (approx. asymptotic)
+  dX_asym <- dX_fn(annual_proj_ = annual_proj, 
+              ip_ = 100)
+  
+  # caluclate transient growth rate, sensitivity, and elasticity
+  sens <- sens_fn(dX)
+  
+  # caluclate asymptotic growth rate, sensitivity, and elasticity 
+  sens_asym <- sens_fn(dX_asym)
+  
+  return(list(annual_proj = annual_proj,
+              dX = dX,
+              dX_asym  = dX_asym,
+              sens = sens,
+              sens_asym = sens_asym))
+  
+}) %>%
+  append(setup = list(pj = pj,
+                      nt = nt,
+                      n = n,
+                      b = b,
+                      dates = dates,
+                      years_all = years_all,
+                      years = years,
+                      ids = ids,
+                      theta_names = theta_names))
+end_time <- Sys.time()
+end_time - start_time
 
-plot(colSums(n_proj), type = "l")
-
-# AA
-# 
-# 
-# 
-# surv <- lapply(2:nt, function(t_){
-#   return(tibble(t = t_ - 1,
-#                 row = rep(1:n, n),
-#                 col = rep(1:n, each = n),
-#                 val = c(QQ[,,t_ - 1])))
-# }) %>%
-#   bind_rows() %>%
-#   filter(row == col) %>%
-#   mutate(basin = factor(ifelse(col < 3, "south", "north"),
-#                         levels = c("south","north")),
-#          stage = factor(ifelse(col %in% c(1, 3), "juvenile", "adult"),
-#                         levels = c("juvenile","adult")))
-# 
-# 
-# surv %>%
-#   ggplot(aes(t, val, color = basin))+
-#   facet_wrap(~stage, nrow = 2)+
-#   geom_line()+
-#   scale_color_manual(values = c("dodgerblue","gray20"))+
-#   theme_bw()
-# 
-# 
-# disp <- lapply(2:nt, function(t_){
-#   return(tibble(t = t_ - 1,
-#                 row = rep(1:n, n),
-#                 col = rep(1:n, each = n),
-#                 val = c(DD[,,t_ - 1])))
-# }) %>%
-#   bind_rows() %>%
-#   filter(row %in% c(2, 4),
-#          col %in% c(2, 4),
-#          row != col) %>%
-#   mutate(basin = factor(ifelse(col < 3, "south", "north"),
-#                         levels = c("south","north")))
-# 
-# 
-# disp %>%
-#   ggplot(aes(t, val, color = basin))+
-#   geom_line()+
-#   scale_color_manual(values = c("dodgerblue","gray20"))+
-#   theme_bw()+
-#   scale_y_continuous(limits = c(0, 1))
+# write_rds(annual_output, "analysis/annual_output.rds")

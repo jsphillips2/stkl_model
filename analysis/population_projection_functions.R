@@ -1,3 +1,7 @@
+
+source("analysis/matrix_functions.R")
+
+
 #========================================================================================= 
 # Annual population projection
 #=========================================================================================
@@ -218,7 +222,7 @@ dX_fn <- function(annual_proj_, ip_) {
   
   # initial state distribution
   X <- X_proj[, 1]
-  X_asym <- X
+  X_prop <- X
   
   # initial derivatives of population size with respect to matrix elemetns
   # set to 0
@@ -228,7 +232,7 @@ dX_fn <- function(annual_proj_, ip_) {
   # initialize lists for storing results
   dXdA_out <- list()
   dXdT_out <- list()
-  X_asym_out <- list()
+  X_prop_out <- list()
   X_out <- list()
   
   # loop over time
@@ -237,7 +241,7 @@ dX_fn <- function(annual_proj_, ip_) {
     # Store results
     dXdA_out[[y]] = dXdA
     dXdT_out[[y]] = dXdT 
-    X_asym_out[[y]] = X_asym
+    X_prop_out[[y]] = X_prop
     X_out[[y]] = X
     
     
@@ -251,13 +255,13 @@ dX_fn <- function(annual_proj_, ip_) {
     for (ipy in 1:ip_) {
       
       # project derivatives
-      dXdA = aa_array[, , y] %*% dXdA + kronecker(t(X), Is) 
+      dXdA = aa_array[, , y] %*% dXdA + kronecker(t(X_prop), Is) 
       
       # project derivatives
-      dXdT = aa_array[, , y] %*% dXdT + kronecker(t(X), Is) %*% dAdT %*% diag(theta[y,])
+      dXdT = aa_array[, , y] %*% dXdT + kronecker(t(X_prop), Is) %*% dAdT %*% diag(theta[y,])
       
       # Project abundances
-      X_asym = aa_array[, , y] %*% X_asym
+      X_prop = aa_array[, , y] %*% X_prop
     }
     
     X = aa_array[, , y] %*% X
@@ -270,7 +274,7 @@ dX_fn <- function(annual_proj_, ip_) {
               aa_array = aa_array,
               dXdA_out = dXdA_out,
               dXdT_out = dXdT_out,
-              X_asym_out = X_asym_out,
+              X_prop_out = X_prop_out,
               X_out = X_out))
   
 }
@@ -292,7 +296,7 @@ sens_fn <- function(dX_) {
   ip = dX_$ip
   dXdA_out = dX_$dXdA_out
   dXdT_out = dX_$dXdT_out
-  X_asym_out = dX_$X_asym_out
+  X_prop_out = dX_$X_prop_out
   X_out = dX_$X_out
   
   # define unique years
@@ -306,7 +310,7 @@ sens_fn <- function(dX_) {
   l_out <- lapply(2:ny, function(y){
     
     # proportional rate of increase (lambda)
-    l = (sum(X_asym_out[[y]])/sum(X_asym_out[[y - 1]]))^(1/ip) # realized 
+    l = (sum(X_prop_out[[y]])/sum(X_prop_out[[y - 1]]))^(1/ip) # realized 
     l_asym = c(demogR::eigen.analysis(aa_array[, , y - 1])$lambda) # asymptotic
     
     # intrinsic growth rate
@@ -315,8 +319,8 @@ sens_fn <- function(dX_) {
     
     
     # sensitivity of realized r and lambda 
-    r_sens = t(((t(c) %*% dXdA_out[[y]])/sum(X_asym_out[[y]]) - 
-                   (t(c) %*% dXdA_out[[y - 1]])/sum(X_asym_out[[y - 1]])))
+    r_sens = t(((t(c) %*% dXdA_out[[y]])/sum(X_prop_out[[y]]) - 
+                   (t(c) %*% dXdA_out[[y - 1]])/sum(X_prop_out[[y - 1]])))
     r_sens = r_sens/ip
     l_sens = l * r_sens
     
@@ -326,8 +330,8 @@ sens_fn <- function(dX_) {
     
     
     # sensitivity of realized r and lambda with respect to pars
-    l_elas_p = t(((t(c) %*% dXdT_out[[y]])/sum(X_asym_out[[y]]) - 
-                     (t(c) %*% dXdT_out[[y - 1]])/sum(X_asym_out[[y - 1]])))
+    l_elas_p = t(((t(c) %*% dXdT_out[[y]])/sum(X_prop_out[[y]]) - 
+                     (t(c) %*% dXdT_out[[y - 1]])/sum(X_prop_out[[y - 1]])))
     l_elas_p = l_elas_p / ip
     r_elas_p = l_elas_p / l
     
@@ -347,129 +351,5 @@ sens_fn <- function(dX_) {
   names(l_out) = years_unique[1 : (ny - 1)]
   return(l_out)
 }
-
-
-
-
-
-
-
-#========================================================================================= 
-# Test
-#=========================================================================================
-
-annual_proj <- annual_proj_fn(extract_ = extract, 
-                              pj_ = pj, 
-                              nt_ = nt, 
-                              n_ = n, 
-                              b_ = b, 
-                              years_ = years, 
-                              theta_names_ = theta_names) 
-
-
-
-dX <- dX_fn(annual_proj_ = annual_proj, 
-                    ip_ = 1)
-
-
-sens <- sens_fn(dX)
-
-
-
-
-
-
-l_elas_p <- sapply(sens, function(x_){
-  x_$l_elas_p 
-})
-
-l_elas_p_clean <- as_tibble(t(l_elas_p)) %>%
-  set_names(theta_names) %>%
-  mutate(time = row_number()) %>%
-  gather(var, val, -time) %>%
-  mutate(name = str_split(var, "") %>% map_chr(~as.character(.x[[1]])),
-         index = str_split(var, "") %>% map_chr(~as.character(.x[[2]])),
-         name = paste0(name, index),
-         season = str_split(var, "") %>% map_chr(~as.character(.x[[3]]))) %>%
-  group_by(name) %>%
-  arrange(name, time, season) %>%
-  mutate(season = ifelse(season == "s", 0, 1),
-         new_time = time + cumsum(season))
-
-
-l_elas_p_clean %>%
-  ggplot(aes(new_time, val))+
-  facet_wrap(~name)+
-  geom_hline(yintercept = 0, linetype = 2)+
-  geom_line(size = 1)+
-  theme_classic()
-
-l_elas_p_clean %>%
-  ggplot(aes(name, val, color = new_time))+
-  geom_hline(yintercept = 0, linetype = 2)+
-  geom_jitter(size = 2, height = 0, width = 0.1)+
-  theme_classic()
-
-
-l_elas_p_season <- l_elas_p_clean %>%
-  group_by(name, time) %>%
-  summarize(val = sum(val))
-
-l_elas_p_season %>%
-  ggplot(aes(time, val))+
-  facet_wrap(~name)+
-  geom_hline(yintercept = 0, linetype = 2)+
-  geom_line(size = 1)+
-  theme_classic()
-
-l_elas_p_season %>%
-  ggplot(aes(name, val, color = time))+
-  geom_hline(yintercept = 0, linetype = 2)+
-  geom_violin(linetype = 0, fill = "gray70", width = 1.5)+
-  geom_jitter(size = 2, height = 0, width = 0.1)+
-  theme_classic()
-
-
-
-
-l_elas_mean <- l_elas_p_season %>%
-  group_by(name) %>%
-  summarize(val = mean(val)) %>%
-  arrange(-val)
-
-l_elas_p_season %>%
-  ungroup() %>%
-  mutate(name = factor(name, 
-                       levels = l_elas_mean$name),
-         pos = as.numeric(name)) %>%
-  ggplot(aes(pos, val))+
-  geom_hline(yintercept = 0, linetype = 2)+
-  geom_jitter(aes(fill = time),
-              size = 2, height = 0, width = 0.1,
-              shape = 21, stroke = 0.5)+
-  geom_segment(data = l_elas_mean %>% 
-                 mutate(name = factor(name, 
-                                      levels = l_elas_mean$name),
-                        pos = as.numeric(name),
-                        xmin = pos - 0.2,
-                        xmax = pos + 0.2),
-               aes(x = xmin,
-                   y = val,
-                   xend = xmax,
-                   yend = val),
-               size = 2)+
-  scale_x_continuous("Demographic rate",
-                     breaks = 1:9,
-                     labels = l_elas_mean$name)+
-  scale_y_continuous(Proportional~sensitivity~of~lambda)+
-  scale_fill_gradient2(low ="dodgerblue", 
-                       mid="gray90", 
-                       high="firebrick", 
-                       midpoint = 15)+
-  coord_flip()+
-  theme_classic()
-
-
-
 
 
