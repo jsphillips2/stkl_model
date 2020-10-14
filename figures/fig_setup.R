@@ -107,3 +107,4 @@ state_match <- data_prep %>%
 # vector of dates for matching with time id's
 date_match <- data_prep$date %>% unique()
 
+annual_output <-read_rds("analysis/annual_output.rds")
