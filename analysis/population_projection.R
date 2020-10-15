@@ -8,7 +8,7 @@ library(Matrix)
 library(matrixcalc)
 source("analysis/population_projection_functions.R")
 
-options(mc.cores = parallel::detectCores()-4)
+options(mc.cores = parallel::detectCores()-6)
 
 # set theme
 theme_set(theme_bw() %+replace%
@@ -57,7 +57,7 @@ extract_full <-  rstan::extract(fit, pars = vars) %>%
   lapply(as_tibble) %>%
   bind_cols() %>%
   set_names(vars) %>%
-  sample_n(1000) %>%
+  sample_n(500) %>%
   mutate(id = row_number()) %>%
   gather(var, val, -id) %>%
   mutate(name = str_split(var, "\\[|\\]|,") %>% map_chr(~as.character(.x[1])),
@@ -72,7 +72,17 @@ extract_full <-  rstan::extract(fit, pars = vars) %>%
 #==========
 
 # iterations of MCMC
-ids <- unique(extract_full$id)[1:128]
+ids <- unique(extract_full$id)
+
+setup = list(pj = pj,
+             nt = nt,
+             n = n,
+             b = b,
+             dates = dates,
+             years_all = years_all,
+             years = years,
+             ids = ids,
+             theta_names = theta_names)
 
 start_time <- Sys.time()
 annual_output <- parallel::mclapply(ids, function(id_){
@@ -96,31 +106,24 @@ annual_output <- parallel::mclapply(ids, function(id_){
               ip_ = 1)
   
   # project population size derivatives over many time steps (approx. asymptotic)
-  dX_asym <- dX_fn(annual_proj_ = annual_proj, 
-              ip_ = 100)
+  # dX_asym <- dX_fn(annual_proj_ = annual_proj, 
+  #             ip_ = 100)
   
   # caluclate transient growth rate, sensitivity, and elasticity
   sens <- sens_fn(dX)
   
   # caluclate asymptotic growth rate, sensitivity, and elasticity 
-  sens_asym <- sens_fn(dX_asym)
+  # sens_asym <- sens_fn(dX_asym)
   
-  return(list(annual_proj = annual_proj,
+  return(list(setup = setup,
+              annual_proj = annual_proj,
               dX = dX,
-              dX_asym  = dX_asym,
-              sens = sens,
-              sens_asym = sens_asym))
+              # dX_asym  = dX_asym,
+              sens = sens
+              # sens_asym = sens_asym
+              ))
   
-}) %>%
-  append(setup = list(pj = pj,
-                      nt = nt,
-                      n = n,
-                      b = b,
-                      dates = dates,
-                      years_all = years_all,
-                      years = years,
-                      ids = ids,
-                      theta_names = theta_names))
+})
 end_time <- Sys.time()
 end_time - start_time
 

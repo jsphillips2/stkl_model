@@ -54,7 +54,7 @@ annual_proj_fn <- function(extract_, pj_, nt_, n_, b_, years_, theta_names_) {
   
   
   
-  ### define matrices for filling 
+  ### define matrices for filling  
   Rt <- matrix(0, nrow = n_, ncol = n_)
   Rf <- matrix(0, nrow = n_, ncol = n_)
   Qt <- matrix(0, nrow = n_, ncol = n_)
@@ -64,13 +64,17 @@ annual_proj_fn <- function(extract_, pj_, nt_, n_, b_, years_, theta_names_) {
   Dt <- matrix(0, nrow = n_, ncol = n_)
   Df <- matrix(0, nrow = n_, ncol = n_)
   
+  
+  ### define arrays for filling 
   RR <- array(0, dim = c(n_, n_, nt_ - 1))
   QQ <- array(0, dim = c(n_, n_, nt_ - 1))
   GG <- array(0, dim = c(n_, n_, nt_ - 1))
   DD <- array(0, dim = c(n_, n_, nt_ - 1))
   AA <- array(0, dim = c(n_, n_, nt_ - 1))
   x <- array(0, dim = c(n_, nt_))
-  
+  QQs <- array(0, dim = c(n_, n_, nt_ - 1)) # standardized time steps
+  GGs <- array(0, dim = c(n_, n_, nt_ - 1)) # standardized time steps
+  DDs <- array(0, dim = c(n_, n_, nt_ - 1)) # standardized time steps
   
   
   
@@ -126,6 +130,11 @@ annual_proj_fn <- function(extract_, pj_, nt_, n_, b_, years_, theta_names_) {
       DD[, , t - 1] <- D
       AA[, , t - 1] <- A
       
+      # store projection matrices with standardized time steps
+      QQs[, , t - 1] <- trans_fn(mean(b_) * (Qt + Qf))
+      GGs[, , t - 1] <- trans_fn(mean(b_) * (Gt + Gf))
+      DDs[, , t - 1] <- trans_fn(mean(b_) * (Dt + Df))
+      
     }
   }
   
@@ -174,7 +183,7 @@ annual_proj_fn <- function(extract_, pj_, nt_, n_, b_, years_, theta_names_) {
     c(RR[1,2,ts_[1]],RR[3,4,ts_[1]],
       QQ[1,1,ts_[1]], QQ[2,2,ts_[1]], QQ[3,3,ts_[1]], QQ[4,4,ts_[1]],
       GG[2,1,ts_[1]], DD[4,2,ts_[1]], DD[2,4,ts_[1]],
-      RR[1,2,ts_[2]],RR[3,4,ts_[2]],
+      RR[1,2,ts_[2]], RR[3,4,ts_[2]],
       QQ[1,1,ts_[2]], QQ[2,2,ts_[2]], QQ[3,3,ts_[2]], QQ[4,4,ts_[2]],
       GG[2,1,ts_[2]], DD[4,2,ts_[2]], DD[2,4,ts_[2]])
   }) %>% t()
@@ -183,7 +192,12 @@ annual_proj_fn <- function(extract_, pj_, nt_, n_, b_, years_, theta_names_) {
   return(list(RR = RR,
               QQ = QQ,
               GG = GG,
-              RR = RR,
+              DD = DD,
+              AA = AA,
+              QQs = QQs,
+              GGs = GGs,
+              DDs = DDs,
+              x = x,
               aa = aa,
               aa_array = aa_array,
               X_proj = X_proj,
