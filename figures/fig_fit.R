@@ -38,7 +38,7 @@ x_clean <- fit_summary %>%
 labs <- x_clean %>%
   tidyr::expand(stage) %>%
   mutate(x = lubridate::as_date("2005-07-01"),
-         y = 10)
+         y = 9)
 
 # plot 
 p1 <-  ggplot(data = x_clean,
@@ -71,7 +71,7 @@ p1 <-  ggplot(data = x_clean,
                     values = basin_colors,
                     guide = F)+
   scale_y_continuous(name = Relative~abundance,
-                     limits = c(0, 12),
+                     limits = c(0, 11.3),
                      breaks = c(0, 3, 6, 9))+
   scale_x_date(name = "Date",
                limits = date_limits,
@@ -81,7 +81,7 @@ p1 <-  ggplot(data = x_clean,
         panel.spacing = unit(-1, "lines"),
         legend.key.height = unit(0.5, "lines"),
         legend.key.width = unit(0.7, "lines"),
-        legend.position = c(0.15, 0.42),
+        legend.position = c(0.15, 0.4),
         strip.text.x = element_blank(),
         axis.line.x = element_line(size = 0.25),
         axis.line.y = element_line(size = 0.25))+
@@ -96,7 +96,7 @@ p1
 
 # export
 # cairo_pdf(file = "figures/figs/fig_fit.pdf",
-#           width = 3.5, height = 3.5, family = "Arial")
+#           width = 3.5, height = 4, family = "Arial")
 # p1
 # dev.off()
   

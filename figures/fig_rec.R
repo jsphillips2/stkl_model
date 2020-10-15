@@ -2,8 +2,9 @@
 #========== Preliminaries
 #==========
 
-source("analysis/demographic_model/model/figures/fig_setup.R")
+source("figures/fig_setup.R")
 
+options(mc.cores = parallel::detectCores()-4)
 
 
 
@@ -13,11 +14,13 @@ source("analysis/demographic_model/model/figures/fig_setup.R")
 #==========
 
 # extract variable names
-rt_vars <- {fit_summary %>%
-    filter(str_detect(fit_summary$var, "rt"))}$var
+vars <- {fit_summary %>%
+    filter(str_detect(fit_summary$var, "x") | str_detect(fit_summary$var, "rt"),
+           !str_detect(fit_summary$var, "x0"))}$var
+
 
 # extract recruitment
-rt_full <- fit_summary %>%
+rt_sum <- fit_summary %>%
   rename(lo = `16%`,
          mi = `50%`,
          hi = `84%`) %>%
@@ -28,14 +31,14 @@ rt_full <- fit_summary %>%
          time = str_split(var, "\\[|\\]|,") %>% map_int(~as.integer(.x[3])),
          date = date_match[time],
          b = data_list$b[time])
- 
+
 
 
 #==========
 #========== Plot
 #==========
 
-p1 <- ggplot(data = rt_full,
+p1 <- ggplot(data = rt_sum ,
              aes(x = date, 
                  y = mi, 
                  color = basin))+
@@ -44,7 +47,7 @@ p1 <- ggplot(data = rt_full,
                      values = basin_colors)+
   scale_y_continuous(name = Recruitment~(adult^{-1}),
                      breaks = c(0, 2, 4, 6),
-                     limits = c(-0.1, 6.1))+
+                     limits = c(-0.1, 6.11))+
   scale_x_date(name = "Date",
                limits = date_limits,
                breaks = date_breaks,
@@ -58,7 +61,7 @@ p1 <- ggplot(data = rt_full,
         axis.line.y = element_line(size = 0.25))+
   coord_capped_cart(left = "both", 
                     bottom='both')
-  
+
 p1
 
 # cairo_pdf(file = "figures/figs/fig_rec.pdf",

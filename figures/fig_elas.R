@@ -5,10 +5,12 @@
 source("figures/fig_setup.R")
 source("analysis/population_projection_functions.R")
 
-# ids <- annual_output$setup$ids
-# ids <- 1:128
-years <- annual_output$setup$years
-# theta_names <- annual_output$setup$theta_names
+options(mc.cores = parallel::detectCores()-6)
+
+# extract setup values
+years <- annual_output[[1]]$setup$years
+theta_names <- annual_output[[1]]$setup$theta_names
+ids <- annual_output[[1]]$setup$ids
 
 
 
@@ -21,7 +23,6 @@ years <- annual_output$setup$years
 # extract
 elast <- parallel::mclapply(ids, function(i_){
   sens_ = annual_output[[i_]]$sens
-  sens_asym_ = annual_output[[i_]]$sens_asym
   lapply(1:length(sens_), function(y_){
     tibble(id = i_,
            year = unique(years)[y_],
@@ -145,75 +146,3 @@ p1
 # dev.off()
 
 
-
-
-
-p2 <- elast_sum %>%
-  ungroup() %>%
-  mutate(name = factor(name, levels = theta_order),
-         pos = as.numeric(name) + 
-           0.25 * (year - mean(year)) / max((year - mean(year)))) %>%
-  ggplot(aes(pos, mi))+
-  geom_hline(yintercept = 0,
-             size = 0.2,
-             color = "black",
-             linetype = 2)+
-  geom_errorbar(aes(ymin = lo,
-                    ymax = hi,
-                    color = year),
-                width = 0,
-                size = 0.2)+
-  geom_point(aes(fill = year,
-                 color = year),
-             size = 1,
-             shape = 21, 
-             stroke = 0.2)+
-  geom_segment(data = elast_sum_mean %>%
-                 mutate(name = factor(name, levels = theta_order),
-                        pos = as.numeric(name),
-                        xmin = pos - 0.3,
-                        xmax = pos + 0.3),
-               aes(x = xmin,
-                   y = mi,
-                   xend = xmax,
-                   yend = mi),
-               size = 0.5)+
-  scale_x_continuous(Demographic~rate,
-                  breaks = 1:9,
-                  labels = theta_labs)+
-  scale_y_continuous(Proportional~sensitivity~of~lambda,
-                     breaks = c(-1.5, 0, 1.5),
-                     labels = c("-1.5","0","1.5"),
-                     limits = c(-1.61, 1.61))+
-  scale_fill_gradient2("",
-                       low ="dodgerblue", 
-                       mid="gray70", 
-                       high="firebrick", 
-                       midpoint = 2005,
-                       breaks = c(1995,2015),
-                       guide = guide_colourbar(ticks = F))+
-  scale_color_gradient2(low ="dodgerblue",
-                        mid="gray70",
-                        high="firebrick",
-                        midpoint = 2005,
-                        guide = F)+
-  theme(panel.border = element_blank(),
-        panel.spacing = unit(0, "lines"),
-        legend.key.height = unit(0.5, "lines"),
-        legend.key.width = unit(0.7, "lines"),
-        legend.position = c(0.2,0.1),
-        legend.direction = "horizontal",
-        strip.text.x = element_blank(),
-        axis.line.x = element_line(size = 0.25),
-        axis.line.y = element_line(size = 0.25))+
-  coord_capped_flip(left = "both", 
-                    bottom='both')
-
-# examine plot
-p2
-
-# export
-# cairo_pdf(file = "figures/figs/fig_elas_rev.pdf",
-#           width = 3.5, height = 4.5, family = "Arial")
-# p2
-# dev.off()
