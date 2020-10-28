@@ -23,6 +23,7 @@
 \usepackage{graphicx} % for figures
 \usepackage{booktabs} % for tables
 \usepackage{amsmath} % for split math environment
+\usepackage{enumitem}
 
 
 
@@ -34,7 +35,8 @@
 % ---------------------------------------------------------------------------------------
 
 
-\title{Transient dynamics of a spatially-structured population with time-varying demographic rates}
+\title{Transient dynamics of spatially-structured population cycles 
+in threespine stickleback}
 
 % \author{
 % Joseph S. Phillips$^{1,2, \dagger}$ \\
@@ -92,13 +94,11 @@ Running head: {}
 
 \input{01-intro}
 
-\input{02-data}
+\input{02-methods}
 
-\input{03-model-fit}
+\input{03-results}
 
-\input{04-model-analysis}
-
-\input{05-discussion}
+\input{04-discussion}
 
 
 
@@ -106,8 +106,164 @@ Running head: {}
 
 % ---------------------------------------------------------------------------------------
 % ---------------------------------------------------------------------------------------
-% References, appendix, etc.
+% References, appendix, figures, etc.
 % ---------------------------------------------------------------------------------------
+% ---------------------------------------------------------------------------------------
+
+\bibliographystyle{ecology.bst}
+\clearpage
+
+\bibliography{refs.bib}
+
+% ---------------------------------------------------------------------------------------
+\clearpage
+\begin{figure}
+\centering
+\includegraphics{../figures/figs/fig_fit.pdf}
+\caption{\label{fig:fit}
+Structured population estimates (points) and 
+fit from the structured population model 
+with time-varying demgoraphic rates (lines). 
+The shaded regions correspond to 68\% uncertainty intervals,
+analagous to the coverage of standard errors.
+Note that the intervals used to project the model were unequal,
+matching the structure of the data.
+These unequal projection intervals are responsible for the "jagged" oscillations
+that are occassionally visible in the model fit.
+}
+\end{figure}
+\clearpage
+% ---------------------------------------------------------------------------------------
+
+% ---------------------------------------------------------------------------------------
+\clearpage
+\begin{figure}
+\centering
+\includegraphics{../figures/figs/fig_rec.pdf}
+\caption{\label{fig:rec}
+Per capita (top panel) and total (bottom panel) recruitment, 
+inferred from the structured population model.
+Uncertainty intervals are omitted for clarity 
+(corresponding figures including uncertainty intervals are shown 
+in the Supplementary Materials)
+}
+\end{figure}
+\clearpage
+% ---------------------------------------------------------------------------------------
+
+% ---------------------------------------------------------------------------------------
+\clearpage
+\begin{figure}
+\centering
+\includegraphics{../figures/figs/fig_surv.pdf}
+\caption{\label{fig:surv}
+Survival probabilities inferred from the structured population model.
+Thin lines show the survival probabilities for the projection intervals
+used to fit the model, 
+which typically oscillate between 2 and 10 months.
+The thick lines standardize the survival probabilities to the mean 
+projection interval duration of 6 months to highlight the temporal patterns.
+Note that survival probabilities converge to zero as the projection interval increases,
+so the fact that 6-month survival of south basin juveniles is near zero does not 
+imply that there were never contributions of south basin juveniles to subsequent time steps
+(as can be seen from the thin lines).
+Uncertainty intervals are omitted for clarity 
+(corresponding figures including uncertainty intervals are shown 
+in the Supplementary Materials)
+}
+\end{figure}
+\clearpage
+% ---------------------------------------------------------------------------------------
+
+% ---------------------------------------------------------------------------------------
+\clearpage
+\begin{figure}
+\centering
+\includegraphics{../figures/figs/fig_disp.pdf}
+\caption{\label{fig:disp}
+Dispersal probabilities (top panel) and net movement (bottom panel)
+inferred from the structured population model.
+In the top panel,
+thin lines show the survival probabilities for the projection intervals
+used to fit the model, 
+which typically oscillate between 2 and 10 months.
+The thick lines standardize the survival probabilities to the mean 
+projection interval duration of 6 months to highlight the temporal patterns.
+In the bottom panel,
+net movement is defined such that positive values indicate movement from
+south to north.
+The solid line indicates the net movement at each time step,
+while the dotted line indicates cumulative net movement from the 
+beginning of the time series up to a given time step.
+Uncertainty intervals are omitted for clarity 
+(corresponding figures including uncertainty intervals are shown 
+in the Supplementary Materials)
+}
+\end{figure}
+\clearpage
+% ---------------------------------------------------------------------------------------
+
+% ---------------------------------------------------------------------------------------
+\clearpage
+\begin{figure}
+\centering
+\includegraphics{../figures/figs/fig_lam.pdf}
+\caption{\label{fig:lam}
+Time series (top row) and periodigrams from wavelet transforms (bottom row) 
+of the transient (first column) and asymptotic (second column) population growth rates.
+In the top row, shaded regions correspond to 68\% uncertainty intervals,
+analogous to the coverage of standard errors.
+The dashed horizontal line shows $\lambda=1$, 
+which corresponds to no change in the population size.
+In the periodigrams, red indicates high signal while blue indicates low signal. 
+The black contour lines are based on signal quantiles, and denote regions of high signal.
+While the wavelet decomposition was conducted for periods up to the maximum period length
+(29 years), the signal associated with periods >10 years was very weak. 
+So, for clarity the figure truncates the periodigram at 11 years.
+}
+\end{figure}
+\clearpage
+% ---------------------------------------------------------------------------------------
+
+% ---------------------------------------------------------------------------------------
+\clearpage
+\begin{figure}
+\centering
+\includegraphics{../figures/figs/fig_dens.pdf}
+\caption{\label{fig:dens}
+Asymptotic growth rate plotted against total population size (points) as 
+inferred from the structured population model.
+The solid black line shows the fitted values from a linear regression with a lag-1
+residual autocorrelation structure, 
+which accounted for uncertainty in both the growth rate and population size.
+The error bars (vertical and horizontal)
+and the shaded region associated with the regression line 
+correspond to the 68\% uncertainty intervals,
+analogous to the coverage of standard errors.
+The dashed horizontal line shows $\lambda=1$, 
+which corresponds to no change in the population size.
+The dashed vertical line shows the intersection of the regression line with $\lambda=1$,
+which corresponds with the implied equilibrium population size.
+}
+\end{figure}
+\clearpage
+% ---------------------------------------------------------------------------------------
+
+% ---------------------------------------------------------------------------------------
+\clearpage
+\begin{figure}
+\centering
+\includegraphics{../figures/figs/fig_elas.pdf}
+\caption{\label{fig:elas}
+Elasticity analysis of the transient population growth rate 
+with respect to the time-varying demographic rates.
+The error bars correspond to the 68\% uncertainty intervals,
+analogous to the coverage of standard errors.
+The black vertical lines show time-averages of the posterior medians 
+for each demographic parameter to aid visualization.
+}
+\end{figure}
+\clearpage
 % ---------------------------------------------------------------------------------------
 
 \renewcommand{\thefigure}{A\arabic{figure}}
@@ -117,12 +273,7 @@ Running head: {}
 \setcounter{figure}{0}
 \setcounter{table}{0}
 
-\input{06-appendix}
-
-\bibliographystyle{ecology.bst}
-\clearpage
-
-\bibliography{refs.bib}
+\input{05-appendix}
 
 
 \end{document}

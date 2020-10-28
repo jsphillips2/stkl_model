@@ -1,0 +1,204 @@
+% ---------------------------------------------------------------------------------------
+\section*{Results}
+% ---------------------------------------------------------------------------------------
+
+
+
+% ---------------------------------------------------------------------------------------
+\subsection*{Model fit and seasonal dynamics} 
+% ---------------------------------------------------------------------------------------
+
+The M\'{y}vatn stickleback population fluctuated substantially over the past
+three decades, 
+and the model largely succeeded in characterizing these fluctuations 
+(Figure \ref{fig:fit}).
+This stands in contrast to the reduced model with temporally-fixed demographic rates,
+which largely failed to capture the population fluctuations.
+Therefore, the population fluctuations cannot be purely explained in terms of transient
+oscillations, but rather arise at least in part from changes in demographic rates per se. 
+There was a close correspondence between the dynamics of the adults in both basins,
+although abundance in the south basin was particularly low 
+in the second half of the time series.
+Juveniles were less obviously correlated with each other 
+and displayed "spikier" fluctuations than the adults.
+In general, juveniles were substantially more abundant in the north basin than in the south,
+with the exception of occasional peaks. 
+The high abundance of south basin juveniles in June of 1992 appears quite extreme
+relative to the rest of the time series for both basins and life stages.
+However, this pattern was observed across multiple traps and locations within the south basin,
+suggesting that it reflected genuinely elevated abundance.
+
+Per capita recruitment varied substantially across years and was generally of comparable
+magnitude between the two basins (Figure \ref{fig:rec}).
+Similar to juvenile abundance, per capita recruitment in the south 
+was characterized by relatively sudden and short-lived peaks, 
+in comparison with the north basin.
+Total recruitment corresponded very closely with juvenile abundance (Figure \ref{fig:fit}),
+reflecting the model's inference 
+that few juveniles return to the juvenile class at the next time step (see below).
+As noted above, 
+any cross-basin recruitment would be attributed 
+to within-basin recruitment by the model. 
+However, gravid females and males with breeding coloration are routinely sampled in the 
+south basin, indicating that much of the recruitment within the south basin is 
+likely attributable to spawning in the south basin.
+
+In the first half of the time series, 
+survival probabilities of north basin juveniles and of adults in both basins were strongly
+associated (Figure \ref{fig:surv}), 
+with two peaks in survival corresponding with similar peaks in observed abundance 
+(Figure \ref{fig:fit}).
+This covariation in survival probabilities was less pronounced in the second half 
+of the time series, although still present for the north basin juveniles and adults.
+Overall, this suggests that survival probability was affected by processes relevant across 
+the life cycle and present at the scale of the entire lake.
+In contrast to the other population states, 
+survival probability of south basin juveniles was very low,
+although still high enough to constitute a meaningful contribution over the one or two-month
+``summer'' projection interval.
+While the difference between the survival probability of south basin juveniles and 
+the other states is quite pronounced, 
+the basis for this inference is apparent 
+in the population estimates (Figure \ref{fig:fit}). 
+Large, sudden increases in the abundance of south basin juveniles appear to contribute
+to elevated abundance of neither juveniles nor adults at the next time step,
+which directly implies low survival.
+The model inferred a high development rate from the juvenile to the adult stage,
+with a probability of 92\% [88\%, 95\%] over a six-month period. 
+Note that the model implicitly treats all individuals within a given state 
+as demographically identical,
+so this development probability can be interpreted as the average 
+for individuals classified as juveniles, 
+including individuals that are just below the size threshold for being classified as "adults".
+This high development probability reflects the apparent correlation between north basin
+juveniles and adults with a lag of approximately one time step (Figure \ref{fig:fit}).
+As noted above, we fixed the development probability through time and for both basins
+to facilitate estimation of the other demographic parameters.
+
+The model formulates dispersal reciprocally,
+and the dispersal probability is best understood as a measure of the extent 
+to which the sub-populations appeared to be dynamically mixed
+expressed on a per capita basis.
+By this measure, the north and south basins appeared 
+to be substantially coupled (Figure \ref{fig:disp}), 
+which is consistent with the close correspondence 
+between the adult dynamics across basins.
+To clarify the contribution of dispersal to the dynamics, 
+we calculated the net movement of individuals between basins,
+with positive values indicating movement from south to north (``northward'')
+and negative values indicating the converse (``southward'').
+In each time step, 
+net movement was generally low and slightly southward,
+with a few of peaks in net movement corresponding to 
+both peaks in abundance
+and changes in the difference between north and south dispersal probabilities.
+The cumulative movement over the entire time series was clearly southward,
+resulting in a substantial net subsidization of the south basin over that period.
+
+
+
+% ---------------------------------------------------------------------------------------
+\subsection*{Annual dynamics and sensitivity analysis} 
+% ---------------------------------------------------------------------------------------
+
+The transient population growth rate ($\lambda$) fluctuated substantially between years
+(Figure \ref{fig:lam}),
+with a geometric mean of 0.98 [0.97, 0.99] implying a slight average decline
+of $2\%~\text{year}^{-1}$ ($\lambda = 1$ would indicate no change).
+Variance per se reduced the transient growth rate, 
+as the arithmetic mean (1.19 [1.14, 1.24]) was much higher than the geometric mean
+and would have implied substantial growth ($19\%~\text{year}^{-1}$)
+if realized in the population.
+The asymptotic growth rate was similar in this regard,
+although the geometric mean (1.03 [1.00, 1.06]) was slightly higher 
+than for the transient growth rate.
+This is because the asymptotic growth rate lacked the extreme fluctuations 
+of the transient growth rate,
+leading to a lesser reduction relative to the arithmetic mean (1.20 [1.14, 1.27]).
+These results show that variance arising from both changes in demographic
+rates and transience per se reduced the the average population growth rate,
+although effect of the former predominated.
+
+The wavelet decomposition detected a strong periodicity of around 6 years
+in the asymptotic growth rate over the first two decades, 
+which is clearly visible in the corresponding time series (Figure \ref{fig:lam}).
+The wavelet decomposition of the transient growth rate was generally similar,
+although the 6-year periodicity was weaker.
+Furthermore, there was a highly localized periodicity of around 3 years 
+at the beginning of the time series 
+that coincided with the rapid increase and subsequent decline of south basin juveniles.
+Together, these results indicate that the population displayed cyclic dynamics 
+driven by changes in demographic rates.
+However, these cycles were partially obscured by transient fluctuations arising 
+from the non-equilibrium state distributions.
+The absence of conspicuous periodicity in the final decade
+for both the asymptotic and transient growth rates 
+suggests a shift in the dynamics, 
+although it is difficult to draw strong conclusions 
+based on relatively short time series.
+
+The asymptotic growth rate declined with total abundance
+(slope = -0.13 [-0.17, -0.11]; Figure \ref{fig:dens}).
+Futhermore, 
+the intercept of the linear model implies that 
+the asymptotic growth rate approaches 1.77 [1.59, 2.02] 
+as population size approaches zero,
+which is much higher than the ``observed'' geometric mean of 1.03.
+Together, the slope and intercept imply an equilibrium abundance (i.e., $\lambda=1$)
+of 4.25 [3.97, 4.52] relative abundance units,
+about which there were substantial fluctuations in overall abundance 
+(x-axis in Figure \ref{fig:dens}).
+These results suggest that negative density dependence
+had a large effect on the overall population dynamics,
+which is consistent with the periodicity of the asymptotic growth rate.
+While we did not attempt to formally assess whether the strength of density dependence
+changed through time,
+no such shift was visually apparant in Figure \ref{fig:dens}.
+Despite the strong negative relationship between the growth rate and population size, 
+there was substantial residual variation with modest
+temporal autocorrelation (0.203 [0.0826, 0.307]) associated with this linear trend.
+This indicates that there were processes, either density dependent or independent,
+relevant for the dynamics that were not fully captured in the linear model.
+
+The elasticities in Figure \ref{fig:elas} quantify the proportional change in the transient
+growth rate that would result from a proportional perturbation to a given demographic 
+rate.
+An elasticity of 1 indicates that a 1\% change in a demographic rate would result in
+a 1\% in the population growth rate.
+In general, the elasticities were positive,
+which is expected as increases in processes such as survival or recruitment
+should contribute positively to the growth rate.
+However, the elasticity with respect to dispersal from north to south was negative,
+which means that increases in southward dispersal 
+tended to reduce the population growth rate.
+This reflected unfavorable demographic conditions in the south basin,
+chiefly attributable to low juvenile survival,
+but also due to somewhat lower adult survival and inconsistent recruitment.
+Counter-intuitively, the elasticity with respect to south basin recruitment was
+slightly negative in some years. 
+This was a transient phenomenon,
+as demonstrated by the corresponding elasticities 
+for the asymptotic growth rate that were positive
+(X; the asymptotic results were otherwise largely the same as the transient ones).
+The elasiticities with respect to 
+demographic rates originating in the north basin were all of greater
+average magnitude than those originating in the south,
+indicating that that total population growth rate was most sensitive to processes
+occurring in the north basin.
+Among those north basin rates, juvenile survival and recruitment were associated with
+the largest elasticities,
+suggesting that the dynamics were most sensitive to processes early in the life cycle.
+While the elasticities varied somewhat across years, 
+these differences were modest relative to the differences among the demographic rate types.
+Note that the temporal variation in the elasticity of development arose from
+variation in the other demographic rates, 
+as the development probability itself was fixed through time.
+
+
+
+
+
+
+
+
+
