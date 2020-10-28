@@ -52,6 +52,9 @@ vars <- {fit_summary %>%
            str_detect(fit_summary$var, "df") | 
            str_detect(fit_summary$var, "x0"))}$var
 
+# set seed
+set.seed(2e2)
+
 # extract fit
 extract_full <-  rstan::extract(fit, pars = vars) %>%
   lapply(as_tibble) %>%
