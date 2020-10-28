@@ -21,7 +21,7 @@ year_breaks_spec <- c(1995, 2005, 2015)
 #==========
 
 # extract
-lam <- parallel::mclapply(ids, function(i_){
+lam_full <- parallel::mclapply(ids, function(i_){
   sens_ = annual_output[[i_]]$sens
   lapply(1:length(sens_), function(y_){
     tibble(id = i_,
@@ -35,13 +35,28 @@ lam <- parallel::mclapply(ids, function(i_){
     bind_rows()
 }) %>%
   bind_rows() %>%
-  gather(var, val, l, l_asym, r, r_asym) %>%
+  gather(var, val, l, l_asym, r, r_asym) 
+
+# summarize
+lam <- lam_full %>%
   group_by(year, var) %>%
   summarize(lo = quantile(val, probs = c(0.16), na.rm = T),
             mi = median(val, na.rm = T),
             hi = quantile(val, probs = c(0.84), na.rm = T)) %>%
   ungroup()
 
+# summarize median lambda
+lam_full %>%
+  filter(var %in% c("l","l_asym")) %>%
+  group_by(id, var) %>%
+  summarize(geom = prod(val)^(1/length(val)),
+            arith = mean(val)) %>%
+  ungroup() %>%
+  gather(type, val, geom, arith) %>%
+  group_by(var, type) %>%
+  summarize(lo = quantile(val, probs = c(0.16), na.rm = T),
+            mi = median(val, na.rm = T),
+            hi = quantile(val, probs = c(0.84), na.rm = T))
 
 
 
@@ -111,7 +126,7 @@ p1 <- lam %>%
   facet_wrap(~type)+
   geom_hline(yintercept = 1, 
              size = 0.2, 
-             color = "gray50", 
+             color = "black", 
              linetype = 2)+
   geom_ribbon(aes(ymin = lo,
                   ymax = hi),
@@ -119,7 +134,7 @@ p1 <- lam %>%
               linetype = 0)+
   geom_line()+
   scale_y_continuous(Population~growth~rate~(lambda),
-                     trans = "log10",
+                     trans = "log",
                      breaks = c(1/9, 1/3, 1, 3),
                      labels = c("1/9", "1/3", "1", "3"))+
   scale_x_continuous(name = "",
@@ -133,7 +148,7 @@ p1 <- lam %>%
         axis.line.y = element_line(size = 0.25))+
   coord_capped_cart(left = "both", bottom='both')
 
-
+# examine plot
 p1
 
   
@@ -182,6 +197,7 @@ p2 <- ggplot(data = wave_d,
         axis.title.y = element_text(margin = margin(t = 0, r = 15, b = 0, l = 0)))+
   coord_capped_cart(left = "both", bottom='both')
 
+# examine plot
 p2
 
 

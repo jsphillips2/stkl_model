@@ -46,7 +46,8 @@ surv_sum <- surv_full %>%
   group_by(date, basin, stage, var) %>%
   summarize(lo = quantile(val, probs = c(0.16)),
             mi = median(val),
-            hi = quantile(val, probs = c(0.84)))
+            hi = quantile(val, probs = c(0.84))) %>%
+  ungroup()
 
 
 
@@ -57,7 +58,7 @@ surv_sum <- surv_full %>%
 #==========
 
 # plot labels
-labs <- x_clean %>%
+labs <- surv_sum %>%
   tidyr::expand(stage) %>%
   mutate(x = lubridate::as_date("2005-07-01"),
          y = 1.075)
@@ -81,7 +82,7 @@ p1 <- surv_sum %>%
             inherit.aes = F)+
   geom_hline(yintercept = 0.5,
              size = 0.2,
-             color = "gray50",
+             color = "black",
              linetype = 2)+
   geom_line(aes(y = surv),
             size = 0.2,
@@ -116,3 +117,36 @@ p1
 #           width = 3.5, height = 4, family = "Arial")
 # p1
 # dev.off()
+
+
+
+
+
+
+#==========
+#========== Calculate development probability
+#==========
+
+grow <- parallel::mclapply(ids, function(i_){
+  annual_proj_ = annual_output[[i_]]$annual_proj
+  GG_ = annual_proj_$GGs
+  lapply(1:dim(GG_)[3], function(t_){
+    tibble(id = i_,
+           g = 1 - diag(GG_[,,t_]),
+           t = t_
+    ) %>%
+      filter(g > 0) 
+  }) %>%
+    bind_rows()
+}) %>%
+  bind_rows() %>%
+  ungroup()
+
+
+grow %>%
+  group_by(t) %>%
+  summarize(lo = quantile(g, probs = c(0.16), na.rm = T),
+            mi = median(g, na.rm = T),
+            hi = quantile(g, probs = c(0.84), na.rm = T)) %>%
+  select(-t) %>%
+  unique()

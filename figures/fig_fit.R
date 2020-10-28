@@ -38,7 +38,7 @@ x_clean <- fit_summary %>%
 labs <- x_clean %>%
   tidyr::expand(stage) %>%
   mutate(x = lubridate::as_date("2005-07-01"),
-         y = 9)
+         y = 9.9)
 
 # plot 
 p1 <-  ggplot(data = x_clean,
@@ -72,7 +72,7 @@ p1 <-  ggplot(data = x_clean,
                     guide = F)+
   scale_y_continuous(name = Relative~abundance,
                      limits = c(0, 11.3),
-                     breaks = c(0, 3, 6, 9))+
+                     breaks = c(0, 2, 4, 6, 8, 10))+
   scale_x_date(name = "Date",
                limits = date_limits,
                breaks = date_breaks,

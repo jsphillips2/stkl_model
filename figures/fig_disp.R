@@ -90,7 +90,7 @@ p1 <- disp_sum %>%
              color = basin))+
   geom_hline(yintercept = 0.5,
              size = 0.2,
-             color = "gray50",
+             color = "black",
              linetype = 2)+
   geom_line(aes(y = disp),
             size = 0.2,
@@ -143,7 +143,7 @@ p2 <- disp_net %>%
              linetype = var))+
   geom_hline(yintercept = 0,
              size = 0.2,
-             color = "gray50",
+             color = "black",
              linetype = 2)+
   geom_line(size = 0.4)+
   geom_text(data = labs,

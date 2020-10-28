@@ -59,15 +59,15 @@ elast_sum_mean <- elast_sum %>%
 
 # set parameter order
 theta_order <- elast_sum_mean$name 
-theta_labs <- c(expression(phi["j,n"]),
-                expression(rho[n]),
-                expression(phi["a,n"]),
-                expression(gamma),
-                expression(phi["a,s"]),
-                expression(delta[s%->%n]),
-                expression(rho[s]),
-                expression(phi["j,s"]),
-                expression(delta[n%->%s]))
+theta_labs <- c(expression("surv"["j,n"]),
+                expression("recr"[n]),
+                expression("surv"["a,n"]),
+                expression("develop"),
+                expression("surv"["a,s"]),
+                expression("disp"[s%->%n]),
+                expression("recr"[s]),
+                expression("surv"["j,s"]),
+                expression("disp"[n%->%s]))
 
 
 
@@ -108,7 +108,7 @@ p1 <- elast_sum %>%
   scale_x_reverse(Demographic~rate,
                      breaks = 1:9,
                      labels = theta_labs)+
-  scale_y_continuous(Proportional~sensitivity~of~lambda,
+  scale_y_continuous(Elasticity~of~lambda~(transient),
                      breaks = c(-1.5, 0, 1.5),
                      labels = c("-1.5","0","1.5"),
                      limits = c(-1.61, 1.61))+
