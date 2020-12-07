@@ -1,5 +1,68 @@
 % ---------------------------------------------------------------------------------------
-\section*{Appendix I: Transition rates} 
+\section*{Appendix I: N-mixture model} 
+% ---------------------------------------------------------------------------------------
+
+To account for potential variation in trapping probability between size classes,
+locations, and time of day, 
+we used a modified N-mixture model to estimate relative basin-level population densities
+for the two size classes.
+The probability of trapping some number of individuals $y_i$ 
+was modeled as
+%
+\begin{equation}
+  y_i \sim \text{Binomial}\left(\eta_{g_{\eta}[i]}, ~\nu_{g_{\nu}[i]}\right)
+\end{equation}
+%
+where $\eta_{g_{\eta}[i]}$ is the detection probability 
+and $\nu_{g_{\nu}[i]}$ is the population density for a given 
+station-size-date combination for the $i$th observation.
+The density is in units of individuals per station, 
+with each station characterizing a sampling area that is 
+taken to be the same size for all stations.
+The functions ${g_{\eta}[i]}$ and ${g_{\nu}[i]}$ map observations to the 
+appropriate grouping. 
+The discrete population density for each station-size-date combination was modeled as
+%
+\begin{equation}
+  \nu_{g_{\nu}[i]} \sim \text{Poisson}\left(\kappa_{g_{\kappa}[i]}\right)
+\end{equation}
+%
+where $\kappa_{g_{\kappa}[i]}$ is the mean population density across stations 
+within a basin-size-date combination. 
+Variation in $\kappa_{g_{\kappa}[i]}$ across basin, size, 
+and date was characterized as 
+%
+\begin{equation}
+  \kappa_{g_{\kappa}[i]} \sim 
+    \text{Exponential}\left(\zeta \right)
+\end{equation}
+%
+with rate parameter $\zeta = 0.001$ (implying a mean of 1000).
+The detection probability for the $i$th observation was modeled using a 
+``logistic regression''-style approach:
+%
+\begin{equation}
+  \eta_{g_{\eta}[i]} = 
+    \text{logit}^{-1}\left(\mathbf{z}_{g_{\eta}[i]}^\top~{\boldsymbol\beta}\right)
+\end{equation}
+%
+\noindent where $\mathbf{z}_{g_{\eta}[i]}^\text{T}$ is a transposed vector 
+of predictor values for the $i$th observation
+(including '1' in the first column for the overall intercept)
+and $\boldsymbol\beta$ is a vector of coefficients. 
+We included main effects for station, trapping time (day vs. night), size class,
+and the size class $\times$ trapping time interaction.
+We used a Gaussian prior with mean of 0 and standard deviation of 2 
+for the regression" coefficients $\boldsymbol\beta$.
+The model was fit using JAGS via 'runjags' in R4.0.0 with,
+using 4 chains and 15000 iterations (5000 adaptation, 5000 burn-in, and 5000 sampling).
+Convergence was assessed by the potential scale reduction factor (\^{R}),
+which quantifies the relative variance within and between chains. 
+
+
+
+% ---------------------------------------------------------------------------------------
+\section*{Appendix II: Transition rates} 
 % ---------------------------------------------------------------------------------------
 
 We parameterized transition rate matrices for mortality ($\boldsymbol\Omega^{\mu}_t$), 
@@ -88,7 +151,8 @@ Note that
 \end{equation}
 %
 where $\frac{\text{d}\lambda_y}{\text{d}\theta}$ can generically be interpreted
-as the sensitivity of $\lambda$ with respect to a single parameter $\theta$.
+as the sensitivity of $\lambda$ with respect to perturbations 
+in a single parameter $\theta$.
 The elasticity of $\lambda$ is then defined as
 %
 \begin{equation} \label{eq:lelas}

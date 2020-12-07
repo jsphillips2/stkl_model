@@ -19,69 +19,33 @@ densities of sticklebacks.
 For each sampling event at each station, 
 5 traps were set for two 12-hour sessions, 
 one during the day and one during the night.
-After trapping, individuals were sorted into two size classes,
+Individuals were sorted into two size classes before being counted,
 with a threshold of 50mm in the June/July sampling and 45mm in the August/September sampling.
-These size categories roughly map onto sexual maturity (although there is likely variation)
+These size categories roughly map onto sexual maturity,
+and while although there is likely variation in size-at-maturation
+it should serve as a reasonable approximation for the purpose 
+of modeling the population dynamics.
 Within each basin and size class, 
 station catches were of comparable magnitude and 
-strongly synchronized through time (appendix).
+strongly synchronized through time (Supplemenal materials).
 Therefore, our analysis focused on the dynamics of basin-level abundances
 of the two size classes through time.
 
-We used a modified N-mixture model to estimate relative basin-level population densities
-for the two size classes.
-The probability of trapping some number of individuals $y_i$ 
-was modeled as
-%
-\begin{equation}
-  y_i \sim \text{Binomial}\left(\eta_{g_{\eta}[i]}, ~\nu_{g_{\nu}[i]}\right)
-\end{equation}
-%
-where $\eta_{g_{\eta}[i]}$ is the detection probability 
-and $\nu_{g_{\nu}[i]}$ is the population density for a given 
-station-size-date combination for the $i$th observation.
-The density is in units of individuals per station, 
-with each station characterizing a sampling area that is 
-taken to be the same size for all stations.
-The functions ${g_{\eta}[i]}$ and ${g_{\nu}[i]}$ map observations to the 
-appropriate grouping. 
-The discrete population density for each station-size-date combination was modeled as
-%
-\begin{equation}
-  \nu_{g_{\nu}[i]} \sim \text{Poisson}\left(\kappa_{g_{\kappa}[i]}\right)
-\end{equation}
-%
-where $\kappa_{g_{\kappa}[i]}$ is the mean population density across stations 
-within a basin-size-date combination. 
-Variation in $\kappa_{g_{\kappa}[i]}$ across basin, size, 
-and date was characterized as 
-%
-\begin{equation}
-  \kappa_{g_{\kappa}[i]} \sim 
-    \text{Exponential}\left(\zeta \right)
-\end{equation}
-%
-with rate parameter $\zeta = 0.001$ (implying a mean of 1000).
-The detection probability for the $i$th observation was modeled using a 
-``logistic regression''-style approach:
-%
-\begin{equation}
-  \eta_{g_{\eta}[i]} = 
-    \text{logit}^{-1}\left(\mathbf{z}_{g_{\eta}[i]}^\top~{\boldsymbol\beta}\right)
-\end{equation}
-%
-\noindent where $\mathbf{z}_{g_{\eta}[i]}^\text{T}$ is a transposed vector 
-of predictor values for the $i$th observation
-(including '1' in the first column for the overall intercept)
-and $\boldsymbol\beta$ is a vector of coefficients. 
-We included main effects for station, trapping time (day vs. night), size class,
-and the size class $\times$ trapping time interaction.
-We used a Gaussian prior with mean of 0 and standard deviation of 2 
-for the regression" coefficients $\boldsymbol\beta$.
-The model was fit using JAGS via 'runjags' in R4.0.0 with,
-using 4 chains and 15000 iterations (5000 adaptation, 5000 burn-in, and 5000 sampling).
-Convergence was assessed by the potential scale reduction factor (\^{R}),
-which quantifies the relative variance within and between chains. 
+To account for systematic variation in trapping probability between size classes,
+trapping stations, and time of day, 
+we fit a modified N-mixture model \citep{royle2004}
+to the trap-level data to estimate mean population density across sampling stations 
+for each basin $\times$ size-class combination at each time point.
+(Appendix X). 
+We then scaled these relative density estimates by the relative samplings areas 
+of the two basins, 
+which we defined as the entire north basin and the south basin west of a chain
+of islands beyond which there are no trapping data 
+due to historically low stickleback abudance.
+This resulted in a 2:1 relative scaling for the south vs. north basin.
+Both the relative density and relative abundance (after scaling by area) of threespine
+stickleback was generally higher in the north basin than in the south,
+consistent with a mark-recapture study conducted in 1989 \citep{gislason1998}
 
 
 
@@ -89,7 +53,8 @@ which quantifies the relative variance within and between chains.
 \subsection*{Structured population model} 
 % ---------------------------------------------------------------------------------------
 
-We used a multiregional stage-structured model with time-varying demographic rates
+We used a stage-structured metapopulation model \citep{caswell2001matrix}
+with time-varying demographic rates
 to characterize the dynamics of the stickleback population. 
 The model projected the population dynamics due to 
 within-basin recruitment, survival, and development, 
@@ -97,11 +62,13 @@ as well as dispersal between basins.
 Recruitment, survival, and dispersal were allowed to vary through time,
 enabling the model to characterize a range of dynamics, 
 including those implicitly due to endogenous (e.g., density dependence) 
-and exogenous (e.g, environmental variation) processes. 
+and exogenous (e.g, environmental variation) processes
+\citep{zeng1998, ives2012}. 
 We estimated the demographic rates by  
 fitting the model to the time series of abundance estimates. 
 In general terms, this approach works by reconstructing the demographic rates required
-to project the distribution of abundances across states from one time step to the next. 
+to project the distribution of abundances across demographic states 
+from one time step to the next. 
 While parameter identifiability poses a challenge for such inferences over a single time
 step, by explicitly modeling temporal variation in the demographic rates we were able 
 to take advantage of shared information across all time points simultaneously to 
@@ -186,7 +153,7 @@ We modeled between-basin contributions as
 \right].
 \end{equation}
 %
-We fixed $\gamma_{j}$ to a singe value for both basins and through time because 
+We fixed $\gamma_{j}$ to a single value for both basins and through time because 
 it was difficult to statistically separate changes in development from changes 
 in survival probability.
 This is unsurprising, as both survival and development probabilities
@@ -202,8 +169,8 @@ remain within that basin until the next time step.
 However, any recruitment across basins should largely manifest 
 as additional temporal variability in the within-basin recruitment,
 and therefore is implicitly accommodated by the model.
-Furthermore, gravid females and males in breeding coloration are found in both basins,
-making it likely that spawning occurs in each.
+Furthermore, gravid females and males in breeding coloration are 
+routinely found in both basins, making it likely that spawning occurs in each.
 
 To accommodate the unequal duration of the the summer (2-3 months) and winter (9-10 month)
 intervals, we modeled the transition probabilities 
@@ -219,7 +186,7 @@ as spawning was not evenly spread throughout the year but instead was concentrat
 in the summer (but spanned the ``summer'' and ``winter'' sampling periods).
 
 We modeled temporal variation in demographic rates
-(including for $\alpha$ = $\rho_{i,t})$ using random walks:
+(including for $\alpha$ = $\rho_{i,t})$ as random walks:
 %
 \begin{equation} \label{eq:theta}
     \omega^{\alpha}_t & \sim \text{Normal}
@@ -281,8 +248,8 @@ implies a mean of 2,
 which defines a reasonable scale for all of the parameters 
 following the scaling of the population estimates (see below).
 
-We fit the model using Stan 2.19 run from R 4.0.0
-with the ‘rstan’ package.
+We fit the model using Stan 2.19 \citep{Carpenter2017}
+run from R 4.0.0 with the \emph{rstan} package \citep{Stan2018}.
 To facilitate selection of prior parameterizations,
 we scaled the population estimates by dividing by the mean,
 such that the resulting in data that had a mean of 1
@@ -308,12 +275,11 @@ of the likelihood given by equation \ref{eq:likelihood}
 and (2) the ``Leave-one-out Information Criterion'' or LOOIC,
 which is analogous to the Akaike Information Criterion (AIC)
 and can be interpreted in a similar manner.
+We calculated LOOIC using the \emph{loo} package \citep{loo}.
 The full model had a much higher log-likelihood (posterior median: -230 vs. -378)
 and much lower LOOIC (657 vs. 809) than the reduced model,
 indicating that allowing temporal variation in demographic rates provided a
 substantially improved fit to the data.
-
-
 
 
 
@@ -357,7 +323,8 @@ and transient fluctuations due to non-equilibrium state distributions.
 Therefore, it is also informative to calculate 
 the asymptotic population growth rate that 
 would obtain under the equilibrium state distribution in a given time step, 
-which is equal to real part of the leading eigenvalue of $\mathbf{A}_y$.
+which is equal to real part of the leading eigenvalue of $\mathbf{A}_y$ 
+\citep{caswell2001matrix}.
 
 Both the transient and asymptotic population growth rates appeared to display periodic
 behavior for at least a portion of the three decade time series.
@@ -371,26 +338,30 @@ As our use of wavelet transforms was chiefly descriptive and applied to signals
 that were themselves the outputs of a statistical model,
 we did not attempt to apply formal statistical inference (i.e. hypothesis testing)
 to the wavelet decomposition.
-The wavelet analysis was conducted using the R package ``WaveletComp''
-and was applied to the posterior median of $\lambda_y$.
+We conducted the wavelet analysis using the R package \emph{WaveletComp},
+and for tractability we applied the wavelet transform 
+to the posterior median of $\lambda_y$ (rather than to multiple Markov chain samples).
 
 Periodic population fluctuations are often attributable to density-dependent processes,
-such as predator-prey and host-parasite interactions.
+such as consumer-resource and host-parasite interactions.
 To provide a general assessment of density dependence,
 we regressed the log-transformed population growth rate ($\lambda_y$)
-agasint overall population size ($N_y$) as inferred from the full demographic model.
+against overall population size ($N_y$) as inferred from the full demographic model.
 The model was fit using the ``gls'' function from the ``nlme'' package in R,
 inclcuding a lag-1 autocorrelation structure in the residuals,
 although this had a limited effect on the overall inference.
 We report this analysis for the asymptotic growth rate,
-as density dependence processes should manifest through the demographic rates directly,
-rather than through transience;
-however, the results for the transient growth rate were similar. 
-The regression was performed for 1000 samples of the Markov chain generated during fitting of the full demographic model to propagate uncertainty in $\lambda_y$ and $N_y$.
+as classical mechanisms of density dependence processes 
+arise through direct changes in the demographic rates, 
+which in turn manifest in the asymptotic growth rate.
+However, the results for the transient growth rate were similar. 
+The regression was performed for 1000 Markov chain samples
+to propagate uncertainty in $\lambda_y$ and $N_y$.
 
 We conducted a sensitivity analysis to evaluate the effect of perturbations 
 in the demographic rates on the population growth rate, 
-using the approach of \cite{caswell2007sensitivity}. 
+using the approach of \cite{caswell2007sensitivity} 
+that is applicable to transient dynamics. 
 The sensitivity of the population growth rate with respect to a demographic parameter
 quantifies how much the growth rate would change in response to a perturbation in the 
 demographic parameter. 
