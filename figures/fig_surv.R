@@ -8,8 +8,8 @@ source("analysis/population_projection_functions.R")
 options(mc.cores = parallel::detectCores()-6)
 
 # extract setup values
-years <- annual_output[[1]]$setup$years
-ids <- annual_output[[1]]$setup$ids
+years <- proj_output[[1]]$setup$years
+ids <- proj_output[[1]]$setup$ids
 
 
 
@@ -21,10 +21,10 @@ ids <- annual_output[[1]]$setup$ids
 
 # extract
 surv_full <- parallel::mclapply(ids, function(i_){
-  annual_proj_ = annual_output[[i_]]$annual_proj
-  QQ_ = annual_proj_$QQ
-  QQs_ = annual_proj_$QQs
-  x_ = annual_proj_$x
+  proj_ = proj_output[[i_]]$proj
+  QQ_ = proj_$QQ
+  QQs_ = proj_$QQs
+  x_ = proj_$x
   lapply(1:dim(QQ_)[3], function(t_){
     tibble(id = i_,
            surv = diag(QQ_[,,t_]),
@@ -37,7 +37,7 @@ surv_full <- parallel::mclapply(ids, function(i_){
     bind_rows()
 }) %>%
   bind_rows() %>%
-  full_join(state_match)
+  full_join(state_match) %>%
   ungroup()
 
 # summarize
@@ -49,19 +49,57 @@ surv_sum <- surv_full %>%
             hi = quantile(val, probs = c(0.84))) %>%
   ungroup()
 
+# juvenile covariance matrix
+juv_covmat <- surv_sum %>%
+  ungroup() %>%
+  filter(stage == "juvenile",
+         var == "surv_s") %>%
+  select(date, basin,  mi) %>%
+  spread(basin, mi) %>%
+  select(-date) %>%
+  as.matrix() %>%
+  cov() %>%
+  round(2)
+
+# adult coveriance matrix
+adult_covmat <- surv_sum %>%
+  ungroup() %>%
+  filter(stage == "adult",
+         var == "surv_s") %>%
+  select(date, basin,  mi) %>%
+  spread(basin, mi) %>%
+  select(-date) %>%
+  as.matrix() %>%
+  cov() %>%
+  round(3)
+
+# combine
+covmat <- tibble(stage = factor(c("juvenile","adult")),
+                 cov = c(format(juv_covmat[2,1], digits = 2, nsmall = 3), 
+                         format(adult_covmat[2,1], digits = 2, nsmall = 2)),
+                 var = c(format(mean(diag(juv_covmat)), digits = 2, nsmall = 2),
+                         format(mean(diag(adult_covmat)), digits = 2, nsmall = 2)))
+
 
 
 
 
 #==========
-#========== Plot dispersal
+#========== Plot survival
 #==========
 
 # plot labels
 labs <- surv_sum %>%
   tidyr::expand(stage) %>%
   mutate(x = lubridate::as_date("2005-07-01"),
-         y = 1.075)
+         y = 1.08)
+
+covmat <- covmat %>%
+  mutate(x = lubridate::as_date("2017-06-01"),
+         y_cov = 1.03,
+         y_var = 0.92,
+         lab_cov = paste0("cov*~`=`*~`", cov,"`"),
+         lab_var = paste0("~bar(var)*~`=`*~`", var,"`"))
 
 # plot
 p1 <- surv_sum %>%
@@ -74,12 +112,28 @@ p1 <- surv_sum %>%
   facet_rep_wrap(~stage,
              nrow = 2)+
   geom_text(data = labs,
-            aes(label = stage, 
-                x = x, 
+            aes(label = stage,
+                x = x,
                 y = y),
-            color = "black", 
-            size = 3,
+            color = "black",
+            size = 3.5,
             inherit.aes = F)+
+  geom_text(data = covmat,
+            aes(x = x, 
+                y = y_cov,
+                label = lab_cov),
+            color = "black", 
+            size = 2.8,
+            inherit.aes = F,
+            parse = T)+
+  geom_text(data = covmat,
+            aes(x = x, 
+                y = y_var,
+                label = lab_var),
+            color = "black", 
+            size = 2.8,
+            inherit.aes = F,
+            parse = T)+
   geom_hline(yintercept = 0.5,
              size = 0.2,
              color = "black",
@@ -128,8 +182,8 @@ p1
 #==========
 
 grow <- parallel::mclapply(ids, function(i_){
-  annual_proj_ = annual_output[[i_]]$annual_proj
-  GG_ = annual_proj_$GGs
+  proj_ = proj_output[[i_]]$proj
+  GG_ = proj_$GGs
   lapply(1:dim(GG_)[3], function(t_){
     tibble(id = i_,
            g = 1 - diag(GG_[,,t_]),

@@ -9,8 +9,8 @@ library(nlme)
 options(mc.cores = parallel::detectCores()-6)
 
 # extract setup values
-years <- annual_output[[1]]$setup$years
-ids <- annual_output[[1]]$setup$ids
+years <- proj_output[[1]]$setup$years
+ids <- proj_output[[1]]$setup$ids
 year_limits_spec <- c(1990, 2020) 
 year_breaks_spec <- c(1995, 2005, 2015) 
 
@@ -23,8 +23,8 @@ year_breaks_spec <- c(1995, 2005, 2015)
 
 # extract
 lam_x_full <- parallel::mclapply(ids, function(i_){
-  sens_ = annual_output[[i_]]$sens
-  proj_ = annual_output[[i_]]$annual_proj$X_proj
+  sens_ = proj_output[[i_]]$sens
+  proj_ = proj_output[[i_]]$proj$X_proj
   out_ = lapply(1:length(sens_), function(y_){
     tibble(id = i_,
            year = unique(years)[y_],

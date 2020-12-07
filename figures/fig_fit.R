@@ -27,6 +27,37 @@ x_clean <- fit_summary %>%
   select(basin, state, stage, date, name, lo, mi, hi)
 
 
+# juvenile covariance matrix
+juv_covmat <- x_clean %>%
+  ungroup() %>%
+  filter(stage == "juvenile") %>%
+  select(date, basin,  mi) %>%
+  spread(basin, mi) %>%
+  select(-date) %>%
+  as.matrix() %>%
+  cov()
+
+# adult coveriance matrix
+adult_covmat <- x_clean %>%
+  ungroup() %>%
+  filter(stage == "adult") %>%
+  select(date, basin,  mi) %>%
+  spread(basin, mi) %>%
+  select(-date) %>%
+  as.matrix() %>%
+  cov()
+
+# combine
+covmat <- tibble(stage = factor(c("juvenile","adult")),
+                 cov = c(format(juv_covmat[2,1], digits = 2, nsmall = 2), 
+                         format(adult_covmat[2,1], digits = 2, nsmall = 2)),
+                 var = c(format(mean(diag(juv_covmat)), digits = 2, nsmall = 2),
+                          format(mean(diag(adult_covmat)), digits = 2, nsmall = 2)))
+
+
+
+
+
 
 
 
@@ -39,6 +70,13 @@ labs <- x_clean %>%
   tidyr::expand(stage) %>%
   mutate(x = lubridate::as_date("2005-07-01"),
          y = 9.9)
+covmat <- covmat %>%
+  mutate(x = lubridate::as_date("2017-01-01"),
+         y_cov = 9.25,
+         y_var = 8.25,
+         lab_cov = paste0("cov*~`=`*~`", cov,"`"),
+         lab_var = paste0("~bar(var)*~`=`*~`", var,"`"))
+  
 
 # plot 
 p1 <-  ggplot(data = x_clean,
@@ -49,12 +87,28 @@ p1 <-  ggplot(data = x_clean,
   facet_rep_wrap(~stage, 
              nrow = 2)+
   geom_text(data = labs,
-            aes(label = stage, 
-                x = x, 
+            aes(label = stage,
+                x = x,
                 y = y),
-            color = "black", 
-            size = 3,
+            color = "black",
+            size = 3.5,
             inherit.aes = F)+
+  geom_text(data = covmat,
+            aes(x = x, 
+                y = y_cov,
+                label = lab_cov),
+            color = "black", 
+            size = 2.8,
+            inherit.aes = F,
+            parse = T)+
+  geom_text(data = covmat,
+            aes(x = x, 
+                y = y_var,
+                label = lab_var),
+            color = "black", 
+            size = 2.8,
+            inherit.aes = F,
+            parse = T)+
   geom_ribbon(aes(ymin = lo, 
                   ymax = hi),
               alpha = 0.2,

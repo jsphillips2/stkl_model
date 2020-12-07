@@ -8,8 +8,8 @@ source("analysis/population_projection_functions.R")
 options(mc.cores = parallel::detectCores()-6)
 
 # extract setup values
-years <- annual_output[[1]]$setup$years
-ids <- annual_output[[1]]$setup$ids
+years <- proj_output[[1]]$setup$years
+ids <- proj_output[[1]]$setup$ids
 
 
 
@@ -21,10 +21,10 @@ ids <- annual_output[[1]]$setup$ids
 
 # extract
 disp_full <- parallel::mclapply(ids, function(i_){
-  annual_proj_ = annual_output[[i_]]$annual_proj
-  DD_ = annual_proj_$DD
-  DDs_ = annual_proj_$DDs
-  x_ = annual_proj_$x
+  proj_ = proj_output[[i_]]$proj
+  DD_ = proj_$DD
+  DDs_ = proj_$DDs
+  x_ = proj_$x
   lapply(1:dim(DD_)[3], function(t_){
     tibble(id = i_,
            disp = 1 - diag(DD_[,,t_]),
@@ -70,6 +70,19 @@ disp_net <- disp_full %>%
             hi = quantile(val, probs = c(0.84), na.rm = T)) %>%
   ungroup()
 
+# covariance matirx
+disp_covmat <- disp_sum %>%
+  ungroup() %>%
+  filter(var == "disp_s") %>%
+  select(date, basin, mi) %>%
+  spread(basin, mi) %>%
+  select(-date) %>%
+  as.matrix() %>%
+  cov()
+
+covmat <- tibble(cov = format(disp_covmat[2,1], digits = 2, nsmall = 2),
+                 var = format(mean(diag(disp_covmat)), digits = 2, nsmall = 2))
+
 
 
 
@@ -80,6 +93,14 @@ disp_net <- disp_full %>%
 #========== Plot dispersal
 #==========
 
+# label
+covmat <- covmat %>%
+  mutate(x = lubridate::as_date("2018-01-01"),
+         y_cov = 1.03,
+         y_var = 0.93,
+         lab_cov = paste0("cov*~`=`*~`", cov,"`"),
+         lab_var = paste0("bar(var)*~`=`*~`", var,"`"))
+
 # plot
 p1 <- disp_sum %>%
   filter(var %in% c("disp", "disp_s")) %>%
@@ -88,6 +109,22 @@ p1 <- disp_sum %>%
   ggplot(aes(x = date, 
              y = disp_s, 
              color = basin))+
+  geom_text(data = covmat,
+            aes(x = x, 
+                y = y_cov,
+                label = lab_cov),
+            color = "black", 
+            size = 2.8,
+            inherit.aes = F,
+            parse = T)+
+  geom_text(data = covmat,
+            aes(x = x, 
+                y = y_var,
+                label = lab_var),
+            color = "black", 
+            size = 2.8,
+            inherit.aes = F,
+            parse = T)+
   geom_hline(yintercept = 0.5,
              size = 0.2,
              color = "black",
@@ -129,12 +166,16 @@ p1
 
 # plot labels
 labs <- tibble(x = lubridate::as_date("1993-07-01"),
-               y = c(-2.8, 0.8),
+               y = c(-2.9, 0.9),
                label = c("southward",
                           "northward"))
 labs2 <- tibble(x = lubridate::as_date("2012-07-01"),
                 y = -1.5,
                 label = "cumulative")
+
+labs3 <- tibble(x = lubridate::as_date("2012-07-01"),
+                y = 0.3,
+                label = "incremental")
 
 # plot
 p2 <- disp_net %>%
@@ -151,9 +192,16 @@ p2 <- disp_net %>%
                 x = x, 
                 y = y),
             color = "black", 
-            size = 3,
+            size = 2.8,
             inherit.aes = F)+
   geom_text(data = labs2,
+            aes(label = label, 
+                x = x, 
+                y = y),
+            color = "black", 
+            size = 3,
+            inherit.aes = F)+
+  geom_text(data = labs3,
             aes(label = label, 
                 x = x, 
                 y = y),

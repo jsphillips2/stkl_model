@@ -8,9 +8,9 @@ source("analysis/population_projection_functions.R")
 options(mc.cores = parallel::detectCores()-6)
 
 # extract setup values
-years <- annual_output[[1]]$setup$years
-theta_names <- annual_output[[1]]$setup$theta_names
-ids <- annual_output[[1]]$setup$ids
+years <- proj_output[[1]]$setup$years
+theta_names <- proj_output[[1]]$setup$theta_names
+ids <- proj_output[[1]]$setup$ids
 
 
 
@@ -22,7 +22,7 @@ ids <- annual_output[[1]]$setup$ids
 
 # extract
 elast <- parallel::mclapply(ids, function(i_){
-  sens_ = annual_output[[i_]]$sens
+  sens_ = proj_output[[i_]]$sens
   lapply(1:length(sens_), function(y_){
     tibble(id = i_,
            year = unique(years)[y_],

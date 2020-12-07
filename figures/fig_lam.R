@@ -8,8 +8,8 @@ source("analysis/population_projection_functions.R")
 options(mc.cores = parallel::detectCores()-6)
 
 # extract setup values
-years <- annual_output[[1]]$setup$years
-ids <- annual_output[[1]]$setup$ids
+years <- proj_output[[1]]$setup$years
+ids <- proj_output[[1]]$setup$ids
 year_limits_spec <- c(1990, 2020) 
 year_breaks_spec <- c(1995, 2005, 2015) 
 
@@ -22,7 +22,7 @@ year_breaks_spec <- c(1995, 2005, 2015)
 
 # extract
 lam_full <- parallel::mclapply(ids, function(i_){
-  sens_ = annual_output[[i_]]$sens
+  sens_ = proj_output[[i_]]$sens
   lapply(1:length(sens_), function(y_){
     tibble(id = i_,
            year = unique(years)[y_],

@@ -8,8 +8,8 @@ source("analysis/population_projection_functions.R")
 options(mc.cores = parallel::detectCores()-6)
 
 # extract setup values
-years <- annual_output[[1]]$setup$years
-ids <- annual_output[[1]]$setup$ids
+years <- proj_output[[1]]$setup$years
+ids <- proj_output[[1]]$setup$ids
 
 
 
@@ -21,9 +21,9 @@ ids <- annual_output[[1]]$setup$ids
 
 # extract
 rec_full <- parallel::mclapply(ids, function(i_){
-  annual_proj_ = annual_output[[i_]]$annual_proj
-  RR_ = annual_proj_$RR
-  x_ = annual_proj_$x
+  proj_ = proj_output[[i_]]$proj
+  RR_ = proj_$RR
+  x_ = proj_$x
   lapply(1:dim(RR_)[3], function(t_){
     tibble(id = i_,
            rec = c(RR_[c(1,3),c(2,4),t_])[c(1,4)],
@@ -51,16 +51,45 @@ rec_sum <- rec_full %>%
             mi = median(val),
             hi = quantile(val, probs = c(0.84)))
 
+# covariance matirx
+rec_covmat <- rec_sum %>%
+  ungroup() %>%
+  filter(var == "rec") %>%
+  select(date, basin, mi) %>%
+  spread(basin, mi) %>%
+  select(-date) %>%
+  as.matrix() %>%
+  cov()
 
+tot_covmat <- rec_sum %>%
+  ungroup() %>%
+  filter(var == "rec_tot") %>%
+  select(date, basin, mi) %>%
+  spread(basin, mi) %>%
+  select(-date) %>%
+  as.matrix() %>%
+  cov()
 
-
-
+covmat <- tibble(type = c("rec","tot"),
+                 cov = c(format(rec_covmat[2,1], digits = 2, nsmall = 2), 
+                         format(tot_covmat[2,1], digits = 2, nsmall = 2)),
+                 var = c(format(mean(diag(rec_covmat)), digits = 2, nsmall = 2),
+                         format(mean(diag(tot_covmat)), digits = 2, nsmall = 2)))
 
 
 
 #==========
 #========== Plot per capita recruitent
 #==========
+
+# label
+covmat <- covmat %>%
+  filter(type == "rec") %>%
+  mutate(x = lubridate::as_date("2018-01-01"),
+         y_cov = 6.2,
+         y_var = 5.6,
+         lab_cov = paste0("cov*~`=`*~`", cov,"`"),
+         lab_var = paste0("~bar(var)*~`=`*~`", var,"`"))
 
 # plot
 p1 <- ggplot(data = rec_sum %>%
@@ -69,6 +98,22 @@ p1 <- ggplot(data = rec_sum %>%
                  y = mi, 
                  color = basin))+
   geom_line(size = 0.4)+
+  geom_text(data = covmat,
+            aes(x = x, 
+                y = y_cov,
+                label = lab_cov),
+            color = "black", 
+            size = 2.8,
+            inherit.aes = F,
+            parse = T)+
+  geom_text(data = covmat,
+            aes(x = x, 
+                y = y_var,
+                label = lab_var),
+            color = "black", 
+            size = 2.8,
+            inherit.aes = F,
+            parse = T)+
   scale_color_manual(name = "",
                      values = basin_colors)+
   scale_y_continuous(name = Recruitment~(capita^{-1}),
@@ -100,6 +145,15 @@ p1
 #========== Plot total recruitent
 #==========
 
+# label
+covmat <- covmat %>%
+  filter(type == "tot") %>%
+  mutate(x = lubridate::as_date("2018-01-01"),
+         y_cov = 10,
+         y_var = 8.8,
+         lab_cov = paste0("cov*~`=`*~`", cov,"`"),
+         lab_var = paste0("~bar(var)*~`=`*~`", var,"`"))
+
 # plot
 p2 <- ggplot(data = rec_sum %>%
                filter(var == "rec_tot"),
@@ -107,6 +161,22 @@ p2 <- ggplot(data = rec_sum %>%
                  y = mi, 
                  color = basin))+
   geom_line(size = 0.4)+
+  geom_text(data = covmat,
+            aes(x = x, 
+                y = y_cov,
+                label = lab_cov),
+            color = "black", 
+            size = 2.8,
+            inherit.aes = F,
+            parse = T)+
+  geom_text(data = covmat,
+            aes(x = x, 
+                y = y_var,
+                label = lab_var),
+            color = "black", 
+            size = 2.8,
+            inherit.aes = F,
+            parse = T)+
   scale_color_manual(name = "",
                      values = basin_colors,
                      guide = F)+
