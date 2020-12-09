@@ -13,15 +13,14 @@ three decades,
 and the model largely succeeded in characterizing these fluctuations 
 (Figure \ref{fig:fit}).
 This stands in contrast to the reduced model with temporally-fixed demographic rates,
-which largely failed to capture the population fluctuations.
+which largely failed to capture the population fluctuations (\emph{Supplemental materials}).
 Therefore, the population fluctuations cannot be purely explained 
 in terms of transient oscillations due to non-equilibrium state structure, 
-but rather arise at least in part from changes in demographic rates per se. 
-There was a close correspondence between the dynamics of the adults in both basins,
-although abundance in the south basin was particularly low 
-in the second half of the time series.
-Juveniles were less obviously correlated with each other 
-and displayed "spikier" fluctuations than the adults.
+but rather arise at least in part from directly changes in the demographic rates. 
+The dynamics of the adults in both basins were strongly synchronized,
+as judged by the large covariance relative to the mean variance of the two time series.
+The juvenile dynamics were less sychronized with each other,
+and they were ``spikier'' than the adult fluctuations.
 In general, juveniles were substantially more abundant in the north basin than in the south,
 with the exception of occasional peaks. 
 The high abundance of south basin juveniles in June of 1992 appears quite extreme
@@ -30,7 +29,8 @@ However, this pattern was observed across multiple traps and locations within th
 suggesting that it reflected genuinely elevated abundance.
 
 Per capita recruitment varied substantially across years and was generally of comparable
-magnitude between the two basins (Figure \ref{fig:rec}).
+magnitude between the two basins (Figure \ref{fig:rec}),
+although it was at most modestly synchronized between basins.
 Similar to juvenile abundance, per capita recruitment in the south 
 was characterized by relatively sudden and short-lived peaks, 
 in comparison with the north basin.
@@ -44,11 +44,10 @@ However, gravid females and males with breeding coloration are routinely sampled
 south basin, indicating that much of the recruitment within the south basin is 
 likely attributable to spawning in the south basin.
 
-In the first half of the time series, 
-survival probabilities of north basin juveniles and of adults in both basins were strongly
-associated (Figure \ref{fig:surv}), 
-with two peaks in survival corresponding with similar peaks in observed abundance 
-(Figure \ref{fig:fit}).
+Adult survival probabilities were strongly synchronized between basins 
+and also appeared similar to the north basin juveniles (Figure \ref{fig:surv}),
+with all three had two peaks in survival corresponding with 
+similar peaks in observed abundance (Figure \ref{fig:fit}).
 This covariation in survival probabilities was less pronounced in the second half 
 of the time series, although still present for the north basin juveniles and adults.
 Overall, this suggests that survival probability was affected by processes relevant across 
@@ -70,14 +69,18 @@ Note that the model implicitly treats all individuals within a given state
 as demographically identical,
 so this development probability can be interpreted as the average 
 for individuals classified as juveniles, 
-including individuals that are just below the size threshold for being classified as "adults".
+including individuals that are just below the size threshold for being classified as adults.
 This high development probability reflects the apparent correlation between north basin
 juveniles and adults with a lag of approximately one time step (Figure \ref{fig:fit}).
 As noted above, we fixed the development probability through time and for both basins
 to facilitate estimation of the other demographic parameters.
 
-The model formulates dispersal reciprocally,
-and the dispersal probability is best understood as a measure of the extent 
+The model formulates dispersal reciprocally and temporal variation in the 
+dispersal probabilites is inferred from the net exchenge of individuals between
+the two sub-populations.
+Consequently, dispersal probabilites for the two basins necessarily covary negatively 
+(Figure \ref{fig:disp}).
+Therefore, the dispersal probability is best understood as a measure of the extent 
 to which the sub-populations appeared to be dynamically mixed
 expressed on a per capita basis.
 By this measure, the north and south basins appeared 
@@ -202,9 +205,9 @@ To explore this further,
 we projected the population dynamics eliminating dispersal between basins, 
 assuming that of the all individuals that would otherwise disperse remained within
 their basin of origin.
-This resulted in the rapid extinction of the south basin subpopulation
+This resulted in the rapid extinction of the south basin sub-population
 and approximately exponential growth 
-of the north basin subpopulation (Figure \ref{fig:sink}).
+of the north basin sub-population (Figure \ref{fig:sink}).
 Under natural conditions, 
 altering the number of individuals in each basin 
 would likely alter the other demographic rates.

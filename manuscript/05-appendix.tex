@@ -48,13 +48,13 @@ The detection probability for the $i$th observation was modeled using a
 %
 \noindent where $\mathbf{z}_{g_{\eta}[i]}^\text{T}$ is a transposed vector 
 of predictor values for the $i$th observation
-(including '1' in the first column for the overall intercept)
+(including 1 in the first column for the overall intercept)
 and $\boldsymbol\beta$ is a vector of coefficients. 
 We included main effects for station, trapping time (day vs. night), size class,
 and the size class $\times$ trapping time interaction.
 We used a Gaussian prior with mean of 0 and standard deviation of 2 
-for the regression" coefficients $\boldsymbol\beta$.
-The model was fit using JAGS via 'runjags' in R4.0.0 with,
+for the coefficients $\boldsymbol\beta$.
+The model was fit using JAGS via \emph{runjags} in R4.0.0 with,
 using 4 chains and 15000 iterations (5000 adaptation, 5000 burn-in, and 5000 sampling).
 Convergence was assessed by the potential scale reduction factor (\^{R}),
 which quantifies the relative variance within and between chains. 
@@ -130,7 +130,7 @@ for much the same reasons.
 
 
 % ---------------------------------------------------------------------------------------
-\section*{Appendix II: Sensitivity analysis} 
+\section*{Appendix III: Sensitivity analysis} 
 % ---------------------------------------------------------------------------------------
 
 We used the method of \cite{caswell2007sensitivity} to calculate the elasticities 
@@ -187,7 +187,7 @@ perturbations in the seasonal demographic rates,
 which are connected to $\mathbf{x}_y$ through the annual population projection matrix
 $\mathbf{A}_y$ as defined in equation \ref{eq:A}.
 If $\boldsymbol\theta_y$ contains the seasonal demographic rates 
-(i.e., the combined elements of $\mathbf{P}_{t[y]}$ and $\mathbf{P}_{t[y]+1}$)
+(i.e., the collective elements of $\mathbf{P}_{t[y]}$ and $\mathbf{P}_{t[y]+1}$)
 and $\boldsymbol\epsilon_y$ is a vector of proportional perturbations in
 $\boldsymbol\theta_y$,
 then 

@@ -9,7 +9,7 @@
 \usepackage{newtxtext,newtxmath}
 \usepackage[math-style=ISO]{unicode-math}
 \usepackage{fullpage}
-\usepackage[authoryear,sectionbib,sort]{natbib}
+\usepackage[authoryear,sectionbib]{natbib}
 \linespread{1.7}
 \usepackage[utf8]{inputenc}
 \usepackage{lineno}
@@ -140,12 +140,13 @@ Running head: {Spatially-structured population cycles}
 Structured population estimates (points) and 
 fit from the structured population model 
 with time-varying demgoraphic rates (lines). 
-The shaded regions correspond to 68\% uncertainty intervals,
-analagous to the coverage of standard errors.
+The shaded regions correspond to Bayesian standard errors.
 Note that the intervals used to project the model were unequal,
 matching the structure of the data.
 These unequal projection intervals are responsible for the "jagged" oscillations
 that are occassionally visible in the model fit.
+The covariances and mean variances are calcualted across basins for a given life-stage
+and serve as a measure of synchrony between basins.
 }
 \end{figure}
 \clearpage
@@ -159,6 +160,8 @@ that are occassionally visible in the model fit.
 \caption{\label{fig:rec}
 Per capita (top panel) and total (bottom panel) recruitment, 
 inferred from the structured population model.
+The covariances and mean variances are calcualted across basins
+and serve as a measure of synchrony between basins.
 Uncertainty intervals are omitted for clarity.
 }
 \end{figure}
@@ -181,6 +184,10 @@ Note that survival probabilities converge to zero as the projection interval inc
 so the fact that 6-month survival of south basin juveniles is near zero does not 
 imply that there were never contributions of south basin juveniles to subsequent time steps
 (as can be seen from the thin lines).
+The covariances and mean variances are calcualted 
+for the 6-month standardize rates
+across basins for a given life-stage
+and serve as a measure of synchrony between basins.
 Uncertainty intervals are omitted for clarity.
 }
 \end{figure}
@@ -201,6 +208,10 @@ used to fit the model,
 which typically oscillate between 2 and 10 months.
 The thick lines standardize the survival probabilities to the mean 
 projection interval duration of 6 months to highlight the temporal patterns.
+The covariance and mean variance are calcualted 
+for the 6-month standardize rates
+across basins
+and serve as a measure of synchrony between basins.
 In the bottom panel,
 net movement is defined such that positive values indicate movement from
 south to north.
@@ -221,8 +232,7 @@ Uncertainty intervals are omitted for clarity.
 \caption{\label{fig:lam}
 Time series (top row) and periodigrams from wavelet transforms (bottom row) 
 of the transient (first column) and asymptotic (second column) population growth rates.
-In the top row, shaded regions correspond to 68\% uncertainty intervals,
-analogous to the coverage of standard errors.
+In the top row, shaded regions correspond to Bayesian standard errors.
 The dashed horizontal line shows $\lambda=1$, 
 which corresponds to no change in the population size.
 In the periodigrams, red indicates high signal while blue indicates low signal. 
@@ -248,8 +258,7 @@ residual autocorrelation structure,
 which accounted for uncertainty in both the growth rate and population size.
 The error bars (vertical and horizontal)
 and the shaded region associated with the regression line 
-correspond to the 68\% uncertainty intervals,
-analogous to the coverage of standard errors.
+correspond to Bayesian standard errors.
 The dashed horizontal line shows $\lambda=1$, 
 which corresponds to no change in the population size.
 The dashed vertical line shows the intersection of the regression line with $\lambda=1$,
@@ -267,8 +276,7 @@ which corresponds with the implied equilibrium population size.
 \caption{\label{fig:elas}
 Elasticity analysis of the transient population growth rate 
 with respect to the time-varying demographic rates.
-The error bars correspond to the 68\% uncertainty intervals,
-analogous to the coverage of standard errors.
+The error bars correspond to Bayesian standard errors.
 The black vertical lines show time-averages of the posterior medians 
 for each demographic parameter to aid visualization.
 }
@@ -289,8 +297,7 @@ Note that under natural conditions the absence of dispersal
 would likely increase density dependence in other demographic rates.
 So, this projection not intended to be realistic, 
 but rather as an illustration of the source-sink nature of the dynamics.
-The shaded regions correspond to 68\% uncertainty intervals,
-analagous to the coverage of standard errors.
+The shaded regions correspond to Bayesian standard errors.
 }
 \end{figure}
 \clearpage
