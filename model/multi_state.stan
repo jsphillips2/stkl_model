@@ -72,6 +72,23 @@ data {
 //=======================================================================================
 
 
+transformed data {
+  
+  // Declare variables
+  int pjs[2]; // number of random walk standard deviations
+  
+  // Number of random walk standard deviations
+  if(max(pj[, 1, 1]) > 1) pjs[1] = 1; else pjs[1] = 0;
+  if(max(pj[, 1, 3]) > 1 || 
+     max(pj[, 1, 5]) > 1 || 
+     max(pj[, 1, 7]) > 1) pjs[2] = 1; else pjs[2] = 0;
+
+}
+
+
+//=======================================================================================
+
+
 parameters {
   
   // declare variables
@@ -85,8 +102,8 @@ parameters {
   matrix <lower = 0> [j[7], nt - 1] dt; // movement rate
   vector <lower = 0> [j[8]] df; // movement rate (fixed)
   real <lower = 0> ys; // standard deviation for likelihood
-  real <lower = 0> rs; // scale for recruitment random walk
-  real <lower = 0> ps; // scale for transition / movement rate random walk
+  real <lower = 0> rs[pjs[1]]; // scale for recruitment random walk
+  real <lower = 0> ps[pjs[1]]; // scale for transition / movement rate random walk
 
 }
 
@@ -257,7 +274,7 @@ model {
               rt[i, t] ~ gamma(1.5, 1.5 / p[2]); 
             }
             if (t > 1 && t < nt) {
-              rt[i, t] ~ normal(rt[i, t - 1], rs) T[0, ]; 
+              rt[i, t] ~ normal(rt[i, t - 1], rs[1]) T[0, ]; 
             }
           } // i
         }
@@ -267,7 +284,7 @@ model {
               qt[i, t] ~ gamma(1.5, 1.5 / p[3]); 
             }
             if (t > 1 && t < nt) {
-              qt[i, t] ~ normal(qt[i, t - 1], ps) T[0, ]; 
+              qt[i, t] ~ normal(qt[i, t - 1], ps[1]) T[0, ]; 
             }
           } // i
         }
@@ -277,7 +294,7 @@ model {
               gt[i, t] ~ gamma(1.5, 1.5 / p[3]); 
             }
             if (t > 1 && t < nt) {
-              gt[i, t] ~ normal(gt[i, t - 1], ps) T[0, ]; 
+              gt[i, t] ~ normal(gt[i, t - 1], ps[1]) T[0, ]; 
             }
           } // i
         }
@@ -287,7 +304,7 @@ model {
               dt[i, t] ~ gamma(1.5, 1.5 / p[3]); 
             }
             if (t > 1 && t < nt) {
-              dt[i, t] ~ normal(dt[i, t - 1], ps) T[0, ]; 
+              dt[i, t] ~ normal(dt[i, t - 1], ps[1]) T[0, ]; 
             }
           } // i
         }  
