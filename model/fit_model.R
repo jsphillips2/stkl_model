@@ -70,9 +70,9 @@ gf_block <- block_fn(v_ = c(0, 0,
 
 # stage-specific site transitions (time-varying)
 # diagonal should be 0
-dt_block <- matrix(c(0, 0, 0, 0,
+dt_block <- matrix(c(0, 0, 1, 0,
                      0, 0, 0, 1,
-                     0, 0, 0, 0,
+                     1, 0, 0, 0,
                      0, 1, 0, 0),
                    nrow = stages * sites, ncol = sites * sites)
 
@@ -145,6 +145,9 @@ b <- {data_prep %>%
   mutate(b = c(diff(time), 0)) %>%
   filter(time < max(time))}$b
 
+# UPDATE: standardize season to 6 months (0.5 years)
+b <- rep(0.5, length(b))
+
 # priors
 p <- c(2, 2, 2, 2)
 
@@ -173,87 +176,87 @@ model_path <- paste0("model/",model,".stan")
 
 
 # MCMC specifications (for testing)
-chains <- 4
-iter <- 100
-adapt_delta <- 0.8
-max_treedepth <- 10
+# chains <- 4
+# iter <- 500
+# adapt_delta <- 0.8
+# max_treedepth <- 10
 
 # MCMC specifications
 # chains <- 4
-# iter <- 300
+# iter <- 8000
 # adapt_delta <- 0.9
 # max_treedepth <- 11
 
 # fit model
-start_time <- Sys.time()
-fit <- stan(file = model_path, data = data_list, seed=2e3,
-            chains = chains, iter = iter,
-            control = list(adapt_delta = adapt_delta, max_treedepth = max_treedepth))
-end_time <- Sys.time()
-end_time - start_time
-
-fit_summary = rstan::summary(fit, probs=c(0.16, 0.5, 0.84))$summary %>%
-  {as_tibble(.) %>%
-      mutate(var = rownames(rstan::summary(fit)$summary))}
-
-# data frame for matching
-state_match <- data_prep %>% 
-  tidyr::expand(nesting(state, basin, stage))  %>%
-  arrange(basin, stage) %>%
-  mutate(st = row_number(),
-         state = factor(interaction(stage, basin),
-                        levels = c("juvenile.south",
-                                   "adult.south",
-                                   "juvenile.north",
-                                   "adult.north"),
-                        labels = c("juvenile\nsouth",
-                                   "adult\nsouth",
-                                   "juvenile\nnorth",
-                                   "adult\nnorth")))
-
-# year match
-date_match <- data_prep$date %>% unique()
-
-# X
-x_clean <- fit_summary %>%
-  select(var, `16%`, `50%`, `84%`) %>%
-  rename(lo = `16%`, mi = `50%`, hi = `84%`) %>%
-  filter(str_detect(fit_summary$var, "x"), !str_detect(fit_summary$var, "x0")) %>%
-  mutate(name = str_split(var, "\\[|\\]|,") %>% map_chr(~as.character(.x[1])),
-         st = str_split(var, "\\[|\\]|,") %>% map_int(~as.integer(.x[2])),
-         time = str_split(var, "\\[|\\]|,") %>% map_int(~as.integer(.x[3])),
-         date = date_match[time]) %>%
-  full_join(state_match) %>%
-  select(basin, state, stage, date, name, lo, mi, hi)
-
-# plot 
-data_prep %>%
-  ggplot(aes(color = basin, fill = basin))+
-  facet_grid(stage~basin)+
-  geom_point(aes(x = date, mean_scale / mean(yy)), size = 0.7, shape = 1, stroke = 0.3)+
-  geom_ribbon(data = x_clean, aes(x = date, ymin = lo, ymax = hi),
-              linetype = 0, alpha = 0.2)+
-  geom_line(aes(x = date, mean_scale / mean(yy)), size = 0.1)+
-  geom_line(data = x_clean, aes(x = date, y = mi), size = 0.4)+
-  scale_color_manual("",values = c("dodgerblue","gray35"), guide = F)+
-  scale_fill_manual("",values = c("dodgerblue","gray35"), guide = F)+
-  scale_x_date("Date", 
-               breaks = lubridate::as_date(c("1994-06-01","2003-06-01","2012-06-01")),
-               labels = c("1994","2003","2012"))
-
-# package for export
-out <- list(data_prep = data_prep,
-            mat_list = list(rt_block, rf_block, qt_block, qf_block, dt_block, df_block),
-            y_scale = y_scale,
-            data_list = data_list,
-            mcmc_specs = list(chains = chains,
-                              iter = iter,
-                              adapt_delta = adapt_delta,
-                              max_treedepth = max_treedepth),
-            fit = fit,
-            fit_summary = fit_summary)
-
-# export
+# start_time <- Sys.time()
+# fit <- stan(file = model_path, data = data_list, seed=2e3,
+#             chains = chains, iter = iter,
+#             control = list(adapt_delta = adapt_delta, max_treedepth = max_treedepth))
+# end_time <- Sys.time()
+# end_time - start_time
+# 
+# fit_summary = rstan::summary(fit, probs=c(0.16, 0.5, 0.84))$summary %>%
+#   {as_tibble(.) %>%
+#       mutate(var = rownames(rstan::summary(fit)$summary))}
+# 
+# # data frame for matching
+# state_match <- data_prep %>% 
+#   tidyr::expand(nesting(state, basin, stage))  %>%
+#   arrange(basin, stage) %>%
+#   mutate(st = row_number(),
+#          state = factor(interaction(stage, basin),
+#                         levels = c("juvenile.south",
+#                                    "adult.south",
+#                                    "juvenile.north",
+#                                    "adult.north"),
+#                         labels = c("juvenile\nsouth",
+#                                    "adult\nsouth",
+#                                    "juvenile\nnorth",
+#                                    "adult\nnorth")))
+# 
+# # year match
+# date_match <- data_prep$date %>% unique()
+# 
+# # X
+# x_clean <- fit_summary %>%
+#   select(var, `16%`, `50%`, `84%`) %>%
+#   rename(lo = `16%`, mi = `50%`, hi = `84%`) %>%
+#   filter(str_detect(fit_summary$var, "x"), !str_detect(fit_summary$var, "x0")) %>%
+#   mutate(name = str_split(var, "\\[|\\]|,") %>% map_chr(~as.character(.x[1])),
+#          st = str_split(var, "\\[|\\]|,") %>% map_int(~as.integer(.x[2])),
+#          time = str_split(var, "\\[|\\]|,") %>% map_int(~as.integer(.x[3])),
+#          date = date_match[time]) %>%
+#   full_join(state_match) %>%
+#   select(basin, state, stage, date, name, lo, mi, hi)
+# 
+# # plot 
+# data_prep %>%
+#   ggplot(aes(color = basin, fill = basin))+
+#   facet_grid(stage~basin)+
+#   geom_point(aes(x = date, mean_scale / mean(yy)), size = 0.7, shape = 1, stroke = 0.3)+
+#   geom_ribbon(data = x_clean, aes(x = date, ymin = lo, ymax = hi),
+#               linetype = 0, alpha = 0.2)+
+#   geom_line(aes(x = date, mean_scale / mean(yy)), size = 0.1)+
+#   geom_line(data = x_clean, aes(x = date, y = mi), size = 0.4)+
+#   scale_color_manual("",values = c("dodgerblue","gray35"), guide = F)+
+#   scale_fill_manual("",values = c("dodgerblue","gray35"), guide = F)+
+#   scale_x_date("Date", 
+#                breaks = lubridate::as_date(c("1994-06-01","2003-06-01","2012-06-01")),
+#                labels = c("1994","2003","2012"))
+# 
+# # package for export
+# out <- list(data_prep = data_prep,
+#             mat_list = list(rt_block, rf_block, qt_block, qf_block, dt_block, df_block),
+#             y_scale = y_scale,
+#             data_list = data_list,
+#             mcmc_specs = list(chains = chains,
+#                               iter = iter,
+#                               adapt_delta = adapt_delta,
+#                               max_treedepth = max_treedepth),
+#             fit = fit,
+#             fit_summary = fit_summary)
+# 
+# # export
 # saveRDS(out,  "output/fit_full.rds")
 
 
