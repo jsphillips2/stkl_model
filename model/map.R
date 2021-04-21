@@ -1,8 +1,10 @@
+source("analysis/map_prep.R")
+
 myv_df %>%
   ggplot(aes(long, lat, group = piece))+
   geom_path()+
-  geom_path(data = tibble(long = c(409600, 406900), 
-                           lat = c(7278100, 7273500), 
+  geom_path(data = tibble(long = c(410800, 406900), 
+                           lat = c(7277900, 7273500), 
                            piece = 10),
              color = "red", size = 1)+
   coord_equal()
@@ -31,8 +33,8 @@ myv_df %>%
   filter(piece == 1) %>%
   ggplot(aes(long, lat, group = piece))+
   geom_path()+
-  geom_path(data = tibble(long = c(409600, 406900), 
-                          lat = c(7278100, 7273500), 
+  geom_path(data = tibble(long = c(410800, 406900), 
+                          lat = c(7277900, 7273500), 
                           piece = 10),
             color = "red", size = 1)+
   coord_equal()
@@ -46,8 +48,8 @@ myv_df %>%
          long < m * lat  + b) %>%
   ggplot(aes(long, lat, group = piece))+
   geom_path()+
-  geom_path(data = tibble(long = c(409600, 406900), 
-                          lat = c(7278100, 7273500), 
+  geom_path(data = tibble(long = c(410800, 406900), 
+                          lat = c(7277900, 7273500), 
                           piece = 10),
             color = "red", size = 1)+
   coord_equal()
