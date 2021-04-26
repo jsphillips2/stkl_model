@@ -11,6 +11,7 @@ library(loo)
 library(WaveletComp)
 library(lubridate)
 library(nlme)
+library(car)
 
 
 # set cores
@@ -214,7 +215,7 @@ x_fit <- fit_sum %>%
 test  = stkl_lam %>%
   select(year, mi) %>%
   left_join(x_fit %>%
-              # filter(stage %in% c("age 2", "age 4")) %>%
+              filter(stage %in% c("age 4+")) %>%
               group_by(year) %>%
               summarize(charr = sum(mi)) %>%
               ungroup() %>%
@@ -340,10 +341,11 @@ ggplot(data  = test_fit,
 m <- gls(z ~ charr_z * state + year_z * state,
           correlation = corCAR1(form = ~ date | state),
           data = test_fit)
-ttab <- summary(m, type = "marginal")$tTable %>% round(2)
+anova(m, type = "marginal")
+ttab <- summary(m)$tTable %>% round(2)
 
 coef_pos <- c(2 ,7, 8, 9)
-summary(m, type = "marginal")$tTable[coef_pos, 1:2]
+summary(m)$tTable[coef_pos, 1:2]
 
 mm <- model.matrix(~charr_z + charr_z:state, 
                    data = test_fit %>%
