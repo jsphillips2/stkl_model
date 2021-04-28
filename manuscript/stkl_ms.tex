@@ -36,7 +36,7 @@
 
 
 \title{Transient dynamics of spatially structured fluctuations 
-in a threespine stickleback population}
+        in threespine stickleback metapopulation}
 
 \author{
 Joseph S. Phillips$^{1,2, \dagger}$ \\
@@ -75,7 +75,7 @@ Institute of Integrative Biology, ETH Zurich,
 
 \bigskip
 
-Running head: {Spatially-structured population cycles}
+Running head: {Metapopulation fluctuations}
 
 \linenumbers{}
 
@@ -107,10 +107,10 @@ allowing us to disentangle the contributions of recruitment and survival,
 spatial coupling via dispersal, and transient dynamics 
 to the population’s large fluctuations in abundance. 
 Our analyses indicate that recruitment was only modestly synchronized between the two basins, 
-whereas survival probability of adults was highly synchronized, 
+whereas survival probabilities of adults were more strongly synchronized, 
 contributing to cyclic fluctuations in the lake-wide population 
 with a period of approximately 6 years. 
-The analyses further show that the two basins are strongly coupled through dispersal, 
+The analyses further show that the two basins are coupled through dispersal, 
 with the north basin subsidizing the south basin and playing a dominant role 
 in driving the lake-wide dynamics. 
 Moreover, transience due to non-equilibrium distributions of individuals 
@@ -139,47 +139,66 @@ of accounting for transience in analyses of population dynamics.
 \section*{Introduction} \label{introduction}
 
 Temporal fluctuations in demographic processes such as survival and reproduction
-are of central importance to population biology.
+are of central importance to population biology
+\citep{twombly1994,fox2000population,koons2016life}.
 Changes in demographic rates underpin population fluctuations arising from both 
-endogenous processes such as predator-prey interactions and endogenous processes
-such as climatic variability.
-Furthermore, demographic rates can change in response to trait plasticity and evolution,
-and feedbacks between ecological and evolutionary dynamics in wild populations 
-are predicated on the potential for demographic rates to vary through time.
+endogenous processes such as predator-prey interactions 
+\citep{rosenzweig1963}
+and exogenous processes such as climatic variability
+\citep{elton1924}.
+Furthermore, demographic rates can change in response to trait plasticity and evolution
+\citep{ellner2011does, bonnet2019role},
+and the interplay between ecological and evolutionary dynamics in wild populations 
+is often predicated on the potential for demographic rates to vary through time
+\citep{coulson2006putting, siepielski2009s, ozgul2010coupled}.
 While temporal variation in demographic rates has been extensively studied,
 these studies are generally restricted to populations subject to long-term monitoring
-with repeated observations of uniquely identified individuals (e.g., mark-recapture).
+with repeated observations of uniquely identified individuals 
+\citep[e.g., mark-recapture;][]{forcada2008life,hunter2010climate}.
 Given the expense and logistical challenges of such studies, 
 they are unlikely to be representative of the range of dynamics found in wild populations.
-Furthermore, long-term demographic studies tend to focus on directional trends, 
-and therefore do not directly address population fluctuations 
-(but see...).
-Consequently, there is a need for further studies characterizing the demographic underpinnings 
-of population fluctuations, especially in systems that are generally
-underrepresented in long-term demographic studies.
+Furthermore, long-term demographic studies tend to focus on directional trends
+or responses to specific drivers 
+\citep[e.g.,][]{}, 
+and therefore do not directly address population fluctuations more broadly
+\citep[but see][]
+{white2007irruptive, koons2017understanding, taylor2018demographic, hoy2020fluctuations}.
+Consequently, 
+there is a need for further studies characterizing the demographic underpinnings 
+of population fluctuations 
+\citep{coulson2005decomposing}, 
+especially in systems that are generally underrepresented 
+in long-term demographic studies.
 
 Uncovering the demographic basis of population fluctuations can be particularly challenging
-for metapopulations, 
+for metapopulations
+\citep{bjornstad2001}, 
 whereby discrete patches or sub-populations are linked through dispersal
 \citep{hanski1998}.
 Phenomenologically, the metapopulation dynamics are the aggregate of the patch-level dynamics.
-For example, synchronous fluctuations in patch-level abundance will reinforce each other in the metapopulation dynamics while anti-synchronous or compensatory 
-fluctuations will cancel each other out. 
+Synchronous fluctuations in patch-level abundance will tend to reinforce each other in the metapopulation dynamics,
+while asynchronous or compensatory fluctuations will tend to cancel each other out
+\citep{vasseur2007spectral}. 
 The degree of synchrony between the patch-level dynamics will be influenced
 by the extent to which the within-patch demographic rates 
-(e.g., reproduction and survival) are synchronized between patches.
+(e.g., reproduction and survival) are synchronized between patches
+\citep{ranta1995synchrony, liebhold2004spatial}.
 Synchronization could arise from synchronous changes in environmental
-drivers such as climate (i.e., Moran effect) 
-or through patches being indirectly coupled through joint interactions with another 
-dynamic agent such as a mobile predator. 
-Moreover, direct coupling between patches via dispersal can alter the patch-level dynamics.
-Dispersal can  result in both greater synchrony and greater asynchrony between patches, 
-depending on the level of dispersal and the demographic processes occurring within patches,
-including the extent to which demographic rates are synchronized across patches. 
+drivers such as climate 
+\citep{moran1953}
+or through patches being indirectly coupled by joint interactions with another 
+dynamic agent such as a mobile predator
+\citep{ims2000, gilg2009}. 
+Moreover, direct coupling between patches via dispersal can alter the patch-level dynamics
+\citep{liebhold2004spatial},
+and the effect of dispersal on the metapopulation dynamics interacts 
+with processes occurring within patches 
+\citep{ranta1995synchrony, kendall2000dispersal, goldwyn2008}.
 Disentangling the effects of direct coupling through dispersal, 
 the degree of synchrony between demographic processes within patches, 
 and the interplay between the two 
-is an important step in characterizing metapopulation fluctuations.
+is an important step in characterizing metapopulation fluctuations
+\citep{liebhold2004spatial, abbott2011}.
 
 Further complicating efforts to characterize the demographic basis 
 of population fluctuations is the potential role of transience.
@@ -188,26 +207,32 @@ that differ from the long-term or asymptotic dynamics under a fixed set of condi
 \citep{hastings2010}.
 In the case of demographically-structured populations,
 a fixed set of demographic rates implies an equilibrium distribution
-of individuals across population states (e.g., stage-classes or patches).
+of individuals across population states such as stage-classes or patches
+\citep{caswell2001matrix}.
 The population's state distribution will tend towards its equilibrium,
 and this will generally entail transient changes 
-in the population's growth rate \citep{caswell2001matrix}.
+in the total population growth rate.
 The qualitative behavior of transience depends
 on the exact configuration of demographic rates
-but can entail cyclic fluctuations 
-as the population approaches its equilibrium distribution.
-By definition, these transient fluctuations occur in the absence of changes in the 
-underlying demographic rates.
+but can include cyclic fluctuations 
+as the population approaches its equilibrium distribution
+\citep{caswell2001matrix}.
+By definition, these transient fluctuations occur in the absence 
+of temporal variation in the underlying demographic rates.
 When demographic rates vary through time,
 which is true to at least some extent for all wild populations,
 the equilibrium distribution will be a ``moving target''
-such that population is likely to be in a perpetual state of disequilibrium.
+such that a given population is likely to be in a perpetual state of disequilibrium
+\citep{fox2000population, koons2017understanding}.
 Whether such perpetual disequilibrium results in large transience 
 depends on the extent to which the underlying demographic rates change through time
-and the rate at which the population approaches its ever-changing equilibrium distribution.
+and the rate at which the population approaches its ever-changing equilibrium distribution,
+which is itself a function of the time-specific demographic rates
+\citep{caswell2005reactivity, caswell2007sensitivity}.
 Despite the growing recognition of its potential ubiquity
 \citep{caswell2007sensitivity, koons2017understanding},
-the contribution of transience to fluctuations in wild populations is generally unknown.
+the contribution of transience to fluctuations in wild populations is generally unknown
+\citep[but see][]{hoy2020fluctuations}.
 
 In this study, 
 we analyzed the metapopulation fluctuations of threespine stickleback 
@@ -215,55 +240,63 @@ we analyzed the metapopulation fluctuations of threespine stickleback
 over the course of three decades in Lake M\'{y}vatn, Iceland.
 M\'{y}vatn's stickleback population is spatially structured by the unique geomorphology
 of the lake \citep{gislason1998, millet2013}, 
-which is divided into two basins connected by two narrow channels.
-The South Basin (Sy{\dh}rifl\'{o}i) is the larger of the two ($28~\text{km}^2$) 
-and is dominated by exposed sediment and intermittent mats of filamentous green algae
+which is divided into two basins connected by two narrow channels 
+(Figure \ref{fig:data}a).
+The larger South Basin (Sy{\dh}rifl\'{o}i; $28~\text{km}^2$)  
+is dominated by exposed sediment and intermittent mats of filamentous green algae
 \citep{einarsson2004myvatn}.
-In contrast, the North Basin (Ytrifl\'{o}i) is substantially smaller ($9~\text{km}^2$)
-and more spatially heterogeneous, 
+The substantially smaller North Basin (Ytrifl\'{o}i; $9~\text{km}^2$) 
+is more spatially heterogeneous, 
 in part due to dredging of the lake bottom
 that substantially altered its bathymetry.
 The North Basin has historically sustained much higher
 densities of threespine stickleback  \citep{gislason1998}, 
-likely due to the ecological differences between the basins. 
+presumably due to the ecological differences between the basins. 
 Despite the narrow connection between the basins, 
 population genetic \citep{millet2013} 
-and genomic analyses (unpublished data) indicate limited differentiation,
+and genomic (unpublished data) analyses indicate limited differentiation,
 which in turn implies extensive gene flow and admixture.
 This is consistent with previous studies indicating that lacustrine populations
-of threespine sticklebacks are generally well-mixed through extensive within-lake dispersal.
+of threespine sticklebacks have the potential to be  
+well-mixed through extensive within-lake dispersal
+\citep{bolnick2009phenotype}.
 
-Moreover, M\'{y}vatn's stickleback population fluctuates substantially through time.
+Furthermore, M\'{y}vatn's stickleback population fluctuates substantially through time.
 While the causes of these fluctuations are unknown, 
 they are likely connected to the large temporal variability 
-of other populations in the lake.
+of other species in the lake.
 M\'{y}vatn is naturally eutrophic due to the inflows of nutrient-rich springs,
 which sets the stage for high-amplitude fluctuations in secondary producers
 \citep{einarsson2004myvatn}.
-Chief among these are chironomid midges and cladocerans
+Chief among these are various species of chironomids and cladocerans
 \citep{einarsson2002, einarsson2004clad, gardarsson2004population, ives2008},
-both of which are important food sources for threespine stickleback.
+some of which are important food sources for threespine stickleback
+\citep{gudmundsson1996}.
 Furthermore, the lake hosts temporally-variable populations 
 of Arctic charr (\textit{Salvelinus alpinus}), 
 brown trout (\textit{Salmo trutta}), 
 and piscivorous birds that have the potential 
 to induce fluctuations in the stickleback population from the top down
-\citep{einarsson2004moulting, gudbergsson2004}.
-Finally, M\'{y}vatn's stickleback can sustain high loads of the cestode parasite
+\citep{gardarsson1979waterfowl, gudbergsson2004}.
+Finally, M\'{y}vatn's stickleback can sustain high loads of the tapeworm
 \textit{Schistocephalus solidus} \citep{gislason1998, karvonen2013},
-which could lead to host-parasite fluctuations.
+which substantially reduce fecundity 
+in other threespine stickleback populations 
+\citep{heins2010evolutionary, heins2012fecundity}.
 
-To explore the spatiotemporal dynamics of M\'{y}vatn's stickleback population, 
+To characterize the spatiotemporal dynamics of M\'{y}vatn's stickleback population, 
 we fit a stage-structured metapopulation model \citep{caswell2001matrix}
 to a 29-year times series of population density estimates.
-The model included temporal variation in demographic rates 
-such as recruitment, survival, and dispersal,
-which were inferred by fitting the model to the observed data.
-This approach provides great flexibility in modeling changes in the demographic rates,
-including those implicitly arising from nonlinear and density-dependent processes
+The model included temporal variation in basin-level recruitment and survival, 
+and dispersal between basins,
+with changes in these demographic rates being statistically inferred 
+as required to account for the observed population dynamics.
+This approach provides great flexibility in modeling the demographic underpinnings of 
+population dynamics,
+including those implicitly arising from exogenous and endogenous processes
 \citep{zeng1998, ives2012}.
 Equipped with the parameterized model, 
-we quantified the synchrony in recruitment and survival between the two basins
+we quantified the covariance in recruitment and survival between the two basins
 in addition to the degree of coupling through dispersal.
 Furthermore, we quantified both the direct and transient effects of 
 time-varying recruitment, survival, and dispersal
@@ -305,10 +338,14 @@ one during the day and one during the night.
 Trapped individuals were sorted into two size classes (small and large)
 with a threshold of 50mm in June and 45mm in July, based on \citep{gislason1998}. 
 Although there is likely variation in size-at-maturation \citep{singkam2019},
-these size classes are expected to correspond with sexual maturity \citep{gislason1998},
+these size classes are expected to correspond with sexual maturity 
+\citep{gudmundsson1996, gislason1998},
 and for the purposes of demographic modeling (described below) 
 they interpreted as two stage-classes (juvenile and adult).
-In general, threespine stickleback reach maturity at 1-2 years of age.
+In general, threespine stickleback reach maturity at 1-2 years of age
+\citep{heins2008overview},
+although this is a plastic trait \citep{baker2015life}
+that may differ among populations \citep{snyder1991migration}.
 Within each basin and stage class, 
 site catches were of comparable magnitude and 
 generally synchronized through time (Figure \ref{fig:data}b).
@@ -341,10 +378,11 @@ were of comparable magnitudes:
 0.11 for South Basin adults, 
 and 0.17 North Basin adults.
 After fitting th N-mixture model,
-Ww scaled the relative density estimates by the relative sampling areas of the two basins, 
+we scaled the relative density estimates by the relative sampling areas of the two basins, 
 which we defined as the entire North Basin and the region of the South Basin 
 covered included with sampling region 
-(excluded the area E of the chain of islands and south of site 135).
+(excluding the area east of the chain of islands and south of site 135;
+Figure \ref{fig:data}a).
 This resulted in a 2:1 relative scaling for the South vs. North Basin.
 Both the relative density and relative abundance (after scaling by area)
 were generally higher in the North Basin than in the South,
@@ -460,8 +498,11 @@ We modeled between-basin contributions as
 \right].
 \end{equation}
 %
-We fixed $\gamma_{j}$ to a single value for both basins and through time 
-because allowing it to vary presented convergence difficulties in the model fitting (see below).
+For computational tractability, 
+we fixed the stage-transition probability $\gamma_{j}$ to a single value 
+for both basins and through time; 
+therefore, temporal variation in stage-transitions was implicitly incorporated 
+into the time-varying survival probabilities.
 
 To be biologically interpretable, 
 survival, dispersal, and stage-transition probabilities must constrained to between
@@ -485,28 +526,31 @@ which is reflected in the structure of equations \ref{eq:W} and \ref{eq:B}.
 
 We modeled temporal variation in recruitment and latent transition rates as
 %
-\begin{equation} \label{eq:theta}
+\begin{equation} \label{eq:omega}
     \omega^{\alpha}_t & \sim \text{Gaussian}
         \left(
             \omega^{\alpha}_{t-1},~\sigma_{\alpha}}
         \right) \text{T}(0, \infty)
 \end{equation}
 %
-where $\alpha$ denotes identity of the rate (e.g., South Basin recruitment), 
+where $\alpha$ denotes the identity of the rate (e.g., South Basin recruitment), 
 and $\sigma_{\alpha}$ is the standard deviation.
-This approach results in smooth changes in the demographic rates through time
-by applying a Gaussian penalty to the model likelihood (see below) for deviations
-from the value of a given demographic rate at the previous time step,
-with the scale of this penalty being determined by the standard deviation $\sigma_{\alpha}$.
-We used a single standard deviation for recruitment in both basins,
-and a single standard deviation for survival and dispersal of all state combinations,
+This approach results in smooth changes in the demographic rates through time,
+since the contribution of equation \ref{eq:omega} to the model likelihood (defined below)
+declines as the difference between $\omega^{\alpha}_t$ and $\omega^{\alpha}_{t-1}$
+increases; 
+the strength of this penalization for changes in $\omega^{\alpha}_t$ 
+is inversely proportional to $\sigma_{\alpha}$.
+We used a single value of $\sigma_{\alpha}$ for recruitment in both basins,
+and a single value for survival and dispersal of all state combinations,
 as these demographic processes respectively occurred on similar scales.
-The Gaussian penalty was truncated from the left at zero to ensure the 
+Furthermore, equation \ref{eq:omega} was truncated from the left at zero to ensure the 
 demographic rates remained positive.
 
-We fit the model in a Bayesian framework, 
-using the abundance estimates from the trapping data. 
-The likelihood of the ``observed'' abundance given the projected abundances 
+We used a Bayesian approach to estimate the demographic parameters in the metapopulation model
+(equations \ref{eq:XPX} through \ref{eq:omega}) by fitting the model to 
+abundance estimates for each stage-class $h$ in each basin $i$ at each time step $t$. 
+The likelihood of the ``observed'' abundances given the projected abundances 
 and standard deviation $\sigma_y$ was calculated as
 %
 \begin{equation} \label{eq:likelihood}
@@ -534,7 +578,7 @@ the posterior distribution of $x_{h,i,t}$ was also guaranteed to be non-negative
 We used gamma priors with shape parameter 1.5 and scale parameter 0.75
 for the initial population size for each stage $\times$ basin combination, 
 initial values for demographic rates,
-and standard deviations for the Gaussian penalties and model likelihood.
+and standard deviations for time-varying rates and model likelihood.
 A gamma distribution with shape parameter of 1.5 has zero density at zero 
 and is concave down as it approaches its mode,
 allowing the posterior to be arbitrarily close to zero 
@@ -557,8 +601,9 @@ Convergence was assessed by the number of divergent transitions
 and the potential scale reduction factor (\^{R}),
 which quantifies the relative variance within and between chains. 
 We used posterior medians as point estimates
-and quantiles (16\% and 84\%) as uncertainty intervals, 
-with coverage analogous to standard errors.
+and quantile-based uncertainty intervals
+with coverage analogous to standard errors
+(i.e., 16\% and 84\% quantiles for 68\% coverage).
 
 In addition to the full model, 
 we also fit three reduced model to which it could be compared:
@@ -730,16 +775,16 @@ The overall magnitudes of per capita recruitment were similar between the two ba
 although South Basin recruitment was more variable (Figure \ref{fig:rec}a,b).
 Covariance in recruitment between the two basins was modest relative 
 to the respective variances, 
-with several major changes (e.g., the sharp decline following a peak in 2015)
-manifesting in both basins.
+although several major events (e.g., the sharp decline following a peak in 2015)
+manifested in both basins.
 Survival probabilities covaried substantially across stage classes within basins
 and also covaried between basins, particularly for adults (Figure \ref{fig:surv}a,b).
 However, the synchronization between basins was primarily visible prior to 2005, 
 after which survival probabilities of both stage classes 
 in the South Basin sharply declined.
-This result is consistent with the persistently low catch of South Basin adults 
-over the last decade (Figure \ref{fig:data}b).
-In Figure \ref{fig:disp}, we only show the net number of individuals
+In constrast, survival probabilities of North Basin adults declined more modestly 
+and then sharply increased following a minimum 2015.
+Figure \ref{fig:disp} shows the net number of individuals
 that dispersed between basins (rather than basin-specific dispersal probabilities),
 as this is most dynamically relevant and thereby ``visible'' to the model when fit to the data.
 Net dispersal was generally low and punctuated by several ``waves'' of movement from 
@@ -812,7 +857,112 @@ and this dominance increased towards the end of the study period.
 
 \section*{Discussion}
 
+We used a stage-structured metapopulation model 
+with time-varying demographic rates to characterize the 
+dynamics of threespine stickleback in the shallow and productive Lake M\'{y}vatn.
+The stickleback population fluctuated substantially over the past three decades,
+driven by  temporal variation in recruitment, survival, and dispersal.
+Recruitment was only modestly synchronized between the two basins, 
+whereas survival probabilities of adults were more strongly synchronized, 
+contributing to cyclic fluctuations in the lake-wide population 
+with a period of approximately 6 years for much of the time series. 
+Moreover, the two basins were coupled through dispersal, 
+with the north basin subsidizing the south basin and playing a dominant role 
+in driving the lake-wide dynamics. 
+In addition to their direct effects, the time-varying demographic rates 
+indirectly resulted in large transient fluctuations in the population growth rate,
+largely obscurring the cyclic nature of the underlying dynamics.
 
+
+
+
+
+Despite the long-standing interest in population fluctuations,
+particularly those cyclic in character 
+\citep{elton1924, nicholson1935},
+studies that decompose these dynamics into direct and transient contributions 
+from the underlying demographic rates are relatively rare 
+\citep{fox2000population, koons2017understanding, hoy2020fluctuations}.
+Our analysis shows that M\'{y}vatn's stickleback population experienced
+large temporal variation in recruitment, survival, and dispersal, 
+all of which contributed to the population fluctuations. 
+The direct effects of these time-varying demographic rates resulted in 
+cyclic dynamics with a period of 6-years over much of the study period.
+Previously,
+\cite{wootton2005} compared the dynamics of 3 threespine stickleback populations 
+in England and Scotland (one riverine, one lacustrine, and one backwater)
+and found that the backwater population had cyclic dynamics of approximately
+6 years, while the other two lacked any consistent periodicity.
+Therefore, the 6-year periodicity of M\'{y}vatn's population is not without precedent,
+although it is also not a ubiquitous feature of stickleback populations.
+The 6-year periodicity does not obviously derive from the typical life span 
+of threespine stickleback.
+This result is corroborated by the fact our the model fit to the M\'{y}vatn data
+failed to produce transient fluctuations in the absence of time-varying demographic rates,
+in contrast to what is theoretical possible \citep{caswell2001, tenhumberg2009}.
+Therefore, the cyclic dynamics appear to be a genuine result of changes in demographic rates,
+rather than a feature of life history.
+
+Moreoever, the time-varying demographic rates also had transient effects that resulted 
+in dramatic high-frequency fluctuations that largely obscurred the underlying cylicity
+in the dynamics. 
+The asymptotic and transient effects of time-varying demographic rates both provide
+insight into the population dynamics.
+The asymptotic dynamics provide the most direct mapping of the demographic rates onto the 
+population growth rate, and thereby provide insight into the processes driving the dynamics.
+For example, periodicity of the asymptotic growth rate suggests density-dependent processes
+and biotic interactions that have long been associated with population cycles.
+However, the transient dynamics reflect the dynamics as actually manifested in the population,
+which is most relevant for processes dependent on the absolute population size, 
+such as extinction risk or effects on food resources.
+Indeed, transient fluctuations in abundance can themselves lead to density-dependent changes 
+in the underlying demographic rates.
+While our model did not explicitly account for density dependence,
+it accounted for it implicitly by inferring temporal variation in demographic rates 
+from the observed dynamics.
+This underscores the relevance of the transient analysis, 
+which implicitly accounts for the full range of processes 
+underpinning the observed population dynamics.
+
+
+
+
+
+
+temporal variation in recruitment, survival
+
+We found that temporal variation in recruitment, survival, and dispersal 
+
+
+led to 
+had large direct effects on fluctuations of M\'{y}vatn's stickleback population
+
+Patterns of fluctuation:
+  i. dynamics are cyclic, but with large transience
+  ii. shift in dynamics, associated with decline S basin survival and declining dispersal
+  iii. collapses in population cycles and synchrony in other systems
+  
+Drivers of population fluctuations
+  i. evidence for similarities between basins, despite differences
+  ii. weak synrhoncy in recruitment recruitment perhaps reflects different food sources
+  iii. stronger synchonry in predation perhpas reflects predation by mobile predators
+   -> change 
+
+Evolution:
+i. sticklebacks show rapid evolution and local adaptation
+  -> lake-stream pairs
+ii. differences in demographic rates could imply differences in selection
+  -> transient flucutations complicate mapping of demography onto selection
+iii. however, extensive gene flow could counteract divergence between the basins
+
+
+
+
+
+Our results show how population fluctuations can arise through the conjunction of 
+spatial coupling and synchronization of demographic rates, 
+and they highlight the potential importance 
+of accounting for transience in analyses of population dynamics.
 
 
 
@@ -879,8 +1029,8 @@ of the demographic model (lines).
 We calculated relative abundances by scaling the density estimates from the 
 N-mixture model by the sampling area spanned by the traps within each basin. 
 Solid lines are posterior medians,
-and shaded regions are 68\% uncertainty intervals, 
-analagous to the coverage of standard errors.
+and shaded regions are quantile-based uncertainty intervals
+with coverage analogous to standard errors (68\%).
 Note that the fitted values for the full and adult-dispersal models 
 are visually indistinguishable.
 }
@@ -896,8 +1046,8 @@ are visually indistinguishable.
 \caption{\label{fig:rec}
 (a) Per capita recruitment as inferred from the adult-dispersal model.
 Solid lines are posterior medians,
-and shaded regions are 68\% uncertainty intervals, 
-analagous to the coverage of standard errors.
+and shaded regions are quantile-based uncertainty intervals
+with coverage analogous to standard errors (68\%).
 (b) Covariance matrix for per capita recruitment by basin,
 calculated from posterior medians.
 The color shading corresponds to the magnitude of the covariance term,
@@ -917,8 +1067,8 @@ the relative magnitudes among the covariance terms.
 \caption{\label{fig:surv}
 (a) Surival probabilites as inferred from the adult-dispersal model.
 Solid lines are posterior medians,
-and shaded regions are 68\% uncertainty intervals, 
-analagous to the coverage of standard errors.
+and shaded regions are quantile-based uncertainty intervals
+with coverage analogous to standard errors (68\%).
 (b) Covariance matrix for survival probability by basin $\times$ stage combination,
 calculated from posterior medians.
 The color shading corresponds to the magnitude of the covariance term,
@@ -942,8 +1092,8 @@ from south to north (``northward'') minus the flux from north to south (``southw
 The model was formulated such that dispersal was calculated after survival and stage-transitions,
 which was reflected in the calculation of net dispersal.
 Solid lines are posterior medians,
-and shaded regions are 68\% uncertainty intervals, 
-analagous to the coverage of standard errors.
+and shaded regions are quantile-based uncertainty intervals
+with coverage analogous to standard errors.
 Posterior summaries were applied to the calculation of net dispersal itself,
 rather than net dispersal being calculated from posterior summaries.
 }
@@ -960,8 +1110,8 @@ rather than net dispersal being calculated from posterior summaries.
 (a) Transient and asymptotic population growth rates,
 projected annually from the adult-dispersal model.
 Solid lines are posterior medians,
-and shaded regions are 68\% uncertainty intervals, 
-analagous to the coverage of standard errors.
+and shaded regions are quantile-based uncertainty intervals
+with coverage analogous to standard errors (68\%).
 The dashed horizontal line shows $\lambda=1$, 
 which corresponds to no change in the population size.
 (b) Periodigrams from wavelet transforms of transient and asymptotic growth rates,
@@ -984,8 +1134,8 @@ So, for clarity the figure truncates the periodigram at 11 years.
 Elasticity analysis of the transient population growth rate 
 with respect to the time-varying demographic rates.
 Points are posterior medians,
-and shaded regions are 68\% uncertainty intervals, 
-analagous to the coverage of standard errors.
+and shaded regions are quantile-based uncertainty intervals
+with coverage analogous to standard errors (68\%).
 The black vertical lines show time-averages of the posterior medians 
 for each demographic parameter to aid visualization.
 }

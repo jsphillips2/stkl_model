@@ -135,6 +135,34 @@ theme_set(theme_bw() %+replace%
 
 
 #=========================================================================================
+#========== Stage-transition
+#=========================================================================================
+
+# # extract
+ids <- proj_no_juv_move [[1]]$setup$ids
+# extract
+trans_full <- parallel::mclapply(ids, function(i_){
+  proj_ = proj_no_juv_move [[i_]]$proj
+  tibble(gg = proj_$GG[2,1,1]) 
+}) %>%
+  bind_rows()
+  
+# summarize
+trans_sum_write <- trans_full %>%
+  summarize(lo = quantile(gg, probs = c(0.16)),
+            mi = median(gg),
+            hi = quantile(gg, probs = c(0.84))) %>%
+  ungroup()
+
+trans_sum_write
+
+#=========================================================================================
+
+
+
+
+
+#=========================================================================================
 #========== Model fits
 #=========================================================================================
 
@@ -984,15 +1012,17 @@ p_lam
 # write_csv(elast_sum, "output/elast_sum.csv")
 # write_csv(elast_sum_mean, "output/elast_sum_mean.csv")
 
-# elast_sum <- read_csv("output/elast_sum.csv")
-# elast_sum_mean <- read_csv("output/elast_sum_mean.csv")
+elast_sum <- read_csv("output/elast_sum.csv") %>%
+  filter(name != "g1")
+elast_sum_mean <- read_csv("output/elast_sum_mean.csv") %>%
+  filter(name != "g1")
 
 # set parameter order
 theta_order <- elast_sum_mean$name 
 theta_labs <- c(expression("surv"["j,n"]),
                 expression("recr"[n]),
                 expression("surv"["a,n"]),
-                expression("trans"),
+                # expression("trans"),
                 expression("surv"["a,s"]),
                 expression("disp"[s%->%n]),
                 expression("recr"[s]),
@@ -1031,7 +1061,7 @@ p_elas <- ggplot(data = elast_sum %>%
                    yend = mi),
                size = 0.5)+
   scale_x_reverse(Demographic~rate,
-                  breaks = 1:9,
+                  breaks = 1:8,
                   labels = theta_labs)+
   scale_y_continuous(Elasticity~of~lambda~(transient),
                      breaks = c(-1.5, 0, 1.5),
@@ -1066,7 +1096,7 @@ p_elas
 
 # export
 # cairo_pdf(file = "analysis/figures/fig_elas.pdf",
-#           width = 3.5, height = 4.5, family = "Arial")
+#           width = 3.5, height = 4, family = "Arial")
 # p_elas
 # dev.off()
 
