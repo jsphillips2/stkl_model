@@ -12,6 +12,7 @@ library(WaveletComp)
 library(lubridate)
 library(nlme)
 library(car)
+library(AICcmodavg)
 
 
 # set cores
@@ -95,173 +96,11 @@ theme_set(theme_bw() %+replace%
 
 
 #=========================================================================================
-#========== Lambdas
-#=========================================================================================
-
-
-stkl_lam <- read_csv("output/lam_sum.csv") %>%
-  filter(var == "l_asym")
-charr_lam <- read_csv("predation/charr/lambda_full.csv") %>%
-  group_by(year) %>%
-    summarize(lo = quantile(lam, probs = c(0.16), na.rm = T),
-              mi = median(lam, na.rm = T),
-              hi = quantile(lam, probs = c(0.84), na.rm = T))
-
-
-ggplot(data  = stkl_lam,
-       aes(x = year,
-           y = mi))+
-  geom_hline(yintercept = 1,
-             linetype =2,
-             size = 0.2,
-             color = "gray50")+
-  geom_line(color = "dodgerblue",
-            linetype = 1)+
-  geom_line(data = charr_lam %>% filter(year > 1990, year < 2019),
-            color = "firebrick")+
-  scale_y_continuous(trans = "log",
-                     breaks = c(1/9, 1/3, 1, 3),
-                     labels = c("1/9", "1/3", "1", "3"),
-                     limits = c(1/9, 4))
-
-  
-
-
-wave_prep <- stkl_lam %>%
-  select(year, mi) %>%
-  rename(stkl = mi) %>%
-  full_join(charr_lam %>%
-              select(year, mi) %>%
-              rename(charr = mi)) %>%
-  na.omit() %>%
-  mutate(stkl = log(stkl),
-         charr = log(charr))
-
-# wavelet transform
-set.seed(34)
-wave_r <- analyze.coherency(wave_prep,
-                          my.pair = c("stkl","charr"),
-                          loess.span = 0,
-                          lowerPeriod = 2,
-                          upperPeriod = 29,
-                          dj = 1 / 20,
-                          dt = 1,
-                          make.pval = T,
-                          n.sim = 2000)
-
-wc.image(wave_r, 
-         n.levels = 250,
-         legend.params = list(lab = "cross-wavelet power levels"),
-         timelab = "", 
-         periodlab = "period (days)")
-
-wt.image(wave_r, 
-         my.series = "stkl",
-         n.levels = 250,
-         timelab = "", 
-         periodlab = "period (days)")
-
-wt.image(wave_r, 
-         my.series = "charr",
-         n.levels = 250,
-         timelab = "", 
-         periodlab = "period (days)")
-
-#=========================================================================================
-
-
-
-
-
-#=========================================================================================
-#========== Stkl lambda and charr abundance
-#=========================================================================================
-
-stkl_lam <- read_csv("output/lam_sum.csv") %>%
-  filter(var == "l_asym")
-
-charr_sites <- read_csv("predation/charr/site_data.csv") 
-
-fit_sum <- read_csv("predation/charr/fit_sum.csv") 
-
-data_list <- read_rds("predation/charr/data_list.rds") 
-
-data <- read_csv("predation/charr/myvatn_char_clean_1986_2020.csv")
-
-
-# extract scaling parameter
-k <- data_list$k
-
-# extract density estimate
-x_fit <- fit_sum %>%
-  filter(str_detect(.$var, "x\\[")) %>%
-  mutate(age = strsplit(var, "\\[|\\]|,") %>% map_int(~as.integer(.x[2])),
-         time = strsplit(var, "\\[|\\]|,") %>% map_int(~as.integer(.x[3])),
-         year = sort(unique(data$year))[time],
-         stage = factor(age,
-                        levels = c(1,2,3,4),
-                        labels = c("age 1",
-                                   "age 2",
-                                   "age 3",
-                                   "age 4+"))) %>%
-  # scale by k
-  mutate(lo = k * lo,
-         mi = k * mi,
-         hi = k * hi) %>%
-  select(year, stage, lo, mi, hi)
-
-
-
-test  = stkl_lam %>%
-  select(year, mi) %>%
-  left_join(x_fit %>%
-              filter(stage %in% c("age 4+")) %>%
-              group_by(year) %>%
-              summarize(charr = sum(mi)) %>%
-              ungroup() %>%
-              mutate(charr = charr / max(charr))) %>%
-  pivot_longer(cols = c(mi, charr)) %>%
-  group_by(name) %>%
-  mutate(value = log(value),
-         z = (value - mean(value)) / sd(value))
-
-ggplot(data  = test,
-       aes(x = year,
-           y = z,
-           color = name))+
-  geom_hline(yintercept = 1,
-             linetype =2,
-             size = 0.2,
-             color = "gray50")+
-  geom_line(linetype = 1)
-
-ggplot(data  = test %>%
-         select(-value) %>%
-         pivot_wider(names_from = name,
-                     values_from = z) %>%
-         arrange(year) %>%
-         mutate(lag = dplyr::lag(charr, n = 3L)),
-       aes(x = lag,
-           y = mi))+
-  geom_point()+
-  geom_smooth(method = "lm", se = F)
-# +
-#   scale_y_continuous(trans = "log",
-#                      breaks = c(1/9, 1/3, 1, 3),
-#                      labels = c("1/9", "1/3", "1", "3"),
-#                      limits = c(1/9, 4))
-
-
-#=========================================================================================
-
-
-
-
-
-#=========================================================================================
 #========== Stkl surv and charr abundance
 #=========================================================================================
 
+
+# load data
 surv_sum <- read_csv("output/surv_sum_write.csv") %>%
   full_join(state_match) %>%
   select(-st)
@@ -275,9 +114,6 @@ data_list <- read_rds("predation/charr/data_list.rds")
 data <- read_csv("predation/charr/myvatn_char_clean_1986_2020.csv")
 
 
-# extract scaling parameter
-k <- data_list$k
-
 # extract density estimate
 x_fit <- fit_sum %>%
   filter(str_detect(.$var, "x\\[")) %>%
@@ -290,86 +126,312 @@ x_fit <- fit_sum %>%
                                    "age 2",
                                    "age 3",
                                    "age 4+"))) %>%
-  # scale by k
-  mutate(lo = k * lo,
-         mi = k * mi,
-         hi = k * hi) %>%
-  select(year, stage, lo, mi, hi)
+  select(year, stage, mi)
+
+# create charr index
+charr_index <- x_fit %>%
+  group_by(stage) %>%
+  mutate(mi = log(mi),
+         mi = (mi - mean(mi)) / sd(mi)) %>%
+  pivot_wider(names_from = stage,
+              values_from = mi) %>%
+  rename(charr_1 = `age 1`,
+         charr_2 = `age 2`,
+         charr_3 = `age 3`,
+         charr_4 = `age 4+`)
 
 
-charr_dens <- x_fit %>%
-  filter(stage %in% c("age 4+")) %>%
-  group_by(year) %>%
-  summarize(charr = sum(mi)) %>%
+# combine stickleback survival with charr index
+comb <- surv_sum %>%
+  mutate(year = year(date),
+         l_mi = log(mi / (1 - mi))) %>%
+  group_by(year, state, basin, stage) %>%
   ungroup() %>%
-  mutate(charr = charr / max(charr))
-
-test  = surv_sum %>%
-  mutate(year = year(date)) %>%
-  left_join(charr_dens %>%
-              arrange(year) %>%
-              mutate(charr_lag = lag(charr))) %>%
-  mutate(z = (mi - mean(mi)) / sd(mi),
-         charr_z = log(charr),
-         charr_z = (charr_z - mean(charr_z)) / sd(charr_z),
-         charr_lag_z = log(charr_lag),
-         charr_lag_z = (charr_lag_z - mean(charr_lag_z)) / sd(charr_lag_z))
+  left_join(charr_index) %>%
+  mutate(year_z = (year - mean(year)) / sd(year))
 
 
-test_fit <- test %>%
-  mutate(mi = log(mi / (1 - mi)),
-         z = (mi - mean(mi)) / sd(mi),
-         year_z = (year - mean(year)) / sd(year)) %>%
-  select(date, year_z, state,stage,basin, charr_z, mi, z)
+# fit model for juveniles
+mod_juv <- gls(l_mi ~ year_z  * basin + 
+                      charr_1 * basin + 
+                      charr_2 * basin + 
+                      charr_3 * basin + 
+                      charr_4 * basin ,
+              correlation = corCAR1(form = ~ date | basin),
+              data = comb %>% filter(stage == "juvenile"))
+summary(mod_juv)$tTable %>% round(3)
+summary(update(mod_juv, .~. - charr_1 : basin - 
+                              charr_2 : basin - 
+                              charr_3 : basin - 
+                              charr_4 : basin))$tTable %>% round(3)
 
-ggplot(data  = test_fit,
-       aes(x = date,
-           y = z))+
-  facet_wrap(~state)+
+
+# fit model for adults
+mod_adl <- gls(l_mi ~ year_z  * basin + 
+                      charr_1 * basin + 
+                      charr_2 * basin + 
+                      charr_3 * basin + 
+                      charr_4 * basin,
+               correlation = corCAR1(form = ~ date | basin),
+               data = comb %>% filter(stage == "adult"))
+summary(mod_adl)$tTable %>% round(3)
+summary(update(mod_adl, .~. - charr_1 : basin - 
+                              charr_2 : basin - 
+                              charr_3 : basin - 
+                              charr_4 : basin))$tTable %>% round(3)
+
+
+# plot
+pp <- ggplot(data = comb %>%
+               select(date, l_mi, state, charr_4) %>%
+               pivot_longer(cols = c(l_mi, charr_4)),
+             aes(x = date,
+                 y = value,
+                 color = name))+
+  facet_rep_wrap(~state)+
   geom_line()+
-  geom_line(aes(y = charr_z),
-            color = "red")
+  scale_y_continuous("Value",
+                     limits = c(-5.5, 5.5),
+                     breaks = c(-4, 0, 4))+
+  scale_x_date(name = "Date",
+               limits = date_limits,
+               breaks = date_breaks,
+               labels = year_breaks)+
+  scale_color_manual("",
+                     values = c("blue", "black"),
+                     labels = c("charr age 4+",
+                                "stkl surv prob"))+
+  theme(legend.key.height = unit(0.5, "lines"),
+        legend.key.width = unit(0.7, "lines"),
+        legend.position = "top",
+        legend.text = element_text(margin = margin(l = -10)),
+        legend.key.size = unit(0.7, "lines"),
+        legend.spacing.x = unit(0.9, "lines"),
+        plot.margin = margin(t = 1,
+                             r = 10,
+                             b = 1,
+                             l = 1),
+        panel.border = element_blank(),
+        panel.spacing.x = unit(-0.5, "lines"),
+        panel.spacing.y = unit(0, "lines"),
+        axis.line.x = element_line(size = 0.25),
+        axis.line.y = element_line(size = 0.25))+
+  coord_capped_cart(left = "top", 
+                    bottom='none',
+                    gap = 0)
 
-ggplot(data  = test_fit,
-       aes(x = charr_z,
-           y = z))+
-  facet_wrap(~state)+
-  geom_point()+
-  geom_smooth(method = "lm",
-              se = F)
-
-m <- gls(z ~ charr_z * state + year_z * state,
-          correlation = corCAR1(form = ~ date | state),
-          data = test_fit)
-anova(m, type = "marginal")
-ttab <- summary(m)$tTable %>% round(2)
-
-coef_pos <- c(2 ,7, 8, 9)
-summary(m)$tTable[coef_pos, 1:2]
-
-mm <- model.matrix(~charr_z + charr_z:state, 
-                   data = test_fit %>%
-                     expand(charr_z = 1,
-                            state))[,c(2:5)]
-vc <- as.matrix(vcov(m)[coef_pos, coef_pos])
-
-apply(mm, 1, function(x){sqrt(t(x) %*% vc %*% x)})
+pp
+# cairo_pdf(file = "predation/p_4.pdf",
+#           width = 3.5, height = 3.5, family = "Arial")
+# pp
+# dev.off()
 
 
+comb_plot <- comb %>%
+  pivot_longer(cols = c(charr_1, charr_2, charr_3, charr_4)) %>%
+  mutate(name = factor(name, 
+                       levels = c("charr_1",
+                                  "charr_2",
+                                  "charr_3",
+                                  "charr_4"),
+                       labels = c("charr age 1",
+                                  "charr age 2",
+                                  "charr age 3",
+                                  "charr age 4+")))
 
-charr_effect <- tibble(state = levels(test_fit$state),
-                       est = c(mm %*% summary(m, type = "marginal")$tTable[coef_pos, 1]),
-                       se = c(apply(mm, 1, function(x){sqrt(t(x) %*% vc %*% x)})))
+p_juv <- comb %>%
+  expand(basin, 
+         year_z = 0, 
+         charr_1 = seq(from = -2, to = 2, length.out = 100),
+         charr_2 = 0,
+         charr_3 = 0,
+         charr_4 = 0) %>%
+  bind_rows(comb %>%
+              expand(basin, 
+                     year_z = 0, 
+                     charr_1 = 0,
+                     charr_2 = seq(from = -2, to = 2, length.out = 100),
+                     charr_3 = 0,
+                     charr_4 = 0)) %>%
+  bind_rows(comb %>% expand(basin, 
+                     year_z = 0,
+                     charr_1 = 0,
+                     charr_2 = 0,
+                     charr_3 = seq(from = -2, to = 2, length.out = 100),
+                     charr_4 = 0)) %>%
+  bind_rows(comb %>%
+              expand(basin, 
+                     year_z = 0, 
+                     charr_1 = 0,
+                     charr_2 = 0,
+                     charr_3 = 0,
+                     charr_4 = seq(from = -2, to = 2, length.out = 100))) %>%
+  filter(!(charr_1 == 0 && charr_2 == 0 && charr_3 == 0 && charr_4 == 0))
+            
+p_juv_pred <- predictSE.gls(mod_juv, newdata = p_juv, print.matrix = T)
+p_juv$fit <- p_juv_pred[,"fit"]
+p_juv$se <- p_juv_pred[,"se.fit"]
 
-ggplot(data = charr_effect,
-       aes(x = state, 
-           y = est))+
-  geom_hline(yintercept = 0,
-             linetype = 2)+
-  geom_point(size = 3)+
-  geom_errorbar(aes(ymin = est -  se,
-                    ymax = est +  se),
-                width = 0,
-                size = 1)
+pp_juv <- p_juv %>%
+  pivot_longer(cols = c(charr_1, charr_2, charr_3, charr_4)) %>%
+  filter(value != 0) %>%
+  mutate(name = factor(name, 
+                       levels = c("charr_1",
+                                  "charr_2",
+                                  "charr_3",
+                                  "charr_4"),
+                       labels = c("charr age 1",
+                                  "charr age 2",
+                                  "charr age 3",
+                                  "charr age 4+")))
+
+pp2 <- ggplot(data = comb_plot %>% filter(stage == "juvenile"),
+              aes(x = value,
+                  y = l_mi,
+                  color = basin))+
+  facet_rep_wrap(~name)+
+  geom_point(alpha = 0.5,
+             size = 1)+
+  geom_ribbon(data = pp_juv,
+              aes(x = value,
+                  ymin = fit - se,
+                  ymax = fit + se,
+                  fill = basin),
+              alpha = 0.2,
+              inherit.aes = F)+
+  geom_line(data = pp_juv,
+            aes(x = value,
+                y = fit))+
+  scale_x_continuous("Charr abundance index",
+                     limits = c(-2.5, 2.5),
+                     breaks = c(-2, 0, 2))+
+  scale_y_continuous("Survival probability (logit)",
+                     limits = c(-5.5, 5.5),
+                     breaks = c(-4, 0, 4))+
+  scale_color_manual("",values = c("dodgerblue","firebrick"))+
+  scale_fill_manual("",values = c("dodgerblue","firebrick"))+
+  theme(legend.key.height = unit(0.5, "lines"),
+        legend.key.width = unit(0.7, "lines"),
+        legend.position = "top",
+        legend.text = element_text(margin = margin(l = -10)),
+        legend.key.size = unit(0.7, "lines"),
+        legend.spacing.x = unit(0.9, "lines"),
+        plot.margin = margin(t = 1,
+                             r = 10,
+                             b = 1,
+                             l = 1),
+        panel.border = element_blank(),
+        panel.spacing.x = unit(-0.5, "lines"),
+        panel.spacing.y = unit(0, "lines"),
+        axis.line.x = element_line(size = 0.25),
+        axis.line.y = element_line(size = 0.25))+
+  coord_capped_cart(left = "top", 
+                    bottom='none',
+                    gap = 0)
+pp2
+# cairo_pdf(file = "predation/p_juv.pdf",
+#           width = 3.5, height = 3.5, family = "Arial")
+# pp2
+# dev.off()
+
+
+
+
+p_adl <- comb %>%
+  expand(basin, 
+         year_z = 0, 
+         charr_1 = seq(from = -2, to = 2, length.out = 100),
+         charr_2 = 0,
+         charr_3 = 0,
+         charr_4 = 0) %>%
+  bind_rows(comb %>%
+              expand(basin, 
+                     year_z = 0, 
+                     charr_1 = 0,
+                     charr_2 = seq(from = -2, to = 2, length.out = 100),
+                     charr_3 = 0,
+                     charr_4 = 0)) %>%
+  bind_rows(comb %>% expand(basin, 
+                            year_z = 0,
+                            charr_1 = 0,
+                            charr_2 = 0,
+                            charr_3 = seq(from = -2, to = 2, length.out = 100),
+                            charr_4 = 0)) %>%
+  bind_rows(comb %>%
+              expand(basin, 
+                     year_z = 0, 
+                     charr_1 = 0,
+                     charr_2 = 0,
+                     charr_3 = 0,
+                     charr_4 = seq(from = -2, to = 2, length.out = 100))) %>%
+  filter(!(charr_1 == 0 && charr_2 == 0 && charr_3 == 0 && charr_4 == 0))
+
+p_adl_pred <- predictSE.gls(mod_adl, newdata = p_adl, print.matrix = T)
+p_adl$fit <- p_adl_pred[,"fit"]
+p_adl$se <- p_adl_pred[,"se.fit"]
+
+pp_adl <- p_adl %>%
+  pivot_longer(cols = c(charr_1, charr_2, charr_3, charr_4)) %>%
+  filter(value != 0) %>%
+  mutate(name = factor(name, 
+                       levels = c("charr_1",
+                                  "charr_2",
+                                  "charr_3",
+                                  "charr_4"),
+                       labels = c("charr age 1",
+                                  "charr age 2",
+                                  "charr age 3",
+                                  "charr age 4+")))
+
+pp3 <- ggplot(data = comb_plot %>% filter(stage == "adult"),
+              aes(x = value,
+                  y = l_mi,
+                  color = basin))+
+  facet_rep_wrap(~name)+
+  geom_point(alpha = 0.5,
+             size = 1)+
+  geom_ribbon(data = pp_adl,
+              aes(x = value,
+                  ymin = fit - se,
+                  ymax = fit + se,
+                  fill = basin),
+              alpha = 0.2,
+              inherit.aes = F)+
+  geom_line(data = pp_adl,
+            aes(x = value,
+                y = fit))+
+  scale_x_continuous("Charr abundance index",
+                     limits = c(-2.5, 2.5),
+                     breaks = c(-2, 0, 2))+
+  scale_y_continuous("Survival probability (logit)",
+                     limits = c(-3.5, 3.5),
+                     breaks = c(-3, 0, 3))+
+  scale_color_manual("",values = c("dodgerblue","firebrick"))+
+  scale_fill_manual("",values = c("dodgerblue","firebrick"))+
+  theme(legend.key.height = unit(0.5, "lines"),
+        legend.key.width = unit(0.7, "lines"),
+        legend.position = "top",
+        legend.text = element_text(margin = margin(l = -10)),
+        legend.key.size = unit(0.7, "lines"),
+        legend.spacing.x = unit(0.9, "lines"),
+        plot.margin = margin(t = 1,
+                             r = 10,
+                             b = 1,
+                             l = 1),
+        panel.border = element_blank(),
+        panel.spacing.x = unit(-0.5, "lines"),
+        panel.spacing.y = unit(0, "lines"),
+        axis.line.x = element_line(size = 0.25),
+        axis.line.y = element_line(size = 0.25))+
+  coord_capped_cart(left = "top", 
+                    bottom='none',
+                    gap = 0)
+
+pp3
+# cairo_pdf(file = "predation/p_adl.pdf",
+#           width = 3.5, height = 3.5, family = "Arial")
+# pp3
+# dev.off()
+
 
 #=========================================================================================
