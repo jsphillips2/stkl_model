@@ -351,7 +351,7 @@ p_rec_a <- ggplot(data = rec_sum,
                   ymax = hi),
               alpha = 0.2)+
   geom_line(size = 0.4)+
-  scale_y_continuous(name = Recruitment~catpia^{-1},
+  scale_y_continuous(name = Recruitment~capita^{-1},
                      limits = c(0, 10),
                      breaks = c(0, 4, 8))+
   scale_x_date(name = "Date",
@@ -968,23 +968,25 @@ p_lam
 #========== Elasticity
 #=========================================================================================
 
-# extract
+# # extract
 # years <- proj_no_juv_move [[1]]$setup$years
 # ids <- proj_no_juv_move [[1]]$setup$ids
 # theta_names <- proj_no_juv_move[[1]]$setup$theta_names
 # 
 # elast <- parallel::mclapply(ids, function(i_){
 #   sens_ = proj_no_juv_move[[i_]]$sens
+#   sens_asym_ = proj_no_juv_move[[i_]]$sens_asym
 #   lapply(1:length(sens_), function(y_){
 #     tibble(id = i_,
 #            year = unique(years)[y_],
-#            elas = sens_[[y_]]$l_elas_p
+#            elas = as.numeric(sens_[[y_]]$l_elas_p),
+#            elas_asym= as.numeric(sens_asym_[[y_]]$l_elas_p)
 #     ) %>%
 #       mutate(theta = theta_names[row_number()])
 #   }) %>%
 #     bind_rows()
 # }) %>%
-#   bind_rows() 
+#   bind_rows()
 # 
 # 
 # # summarize
@@ -993,9 +995,10 @@ p_lam
 #          index = str_split(theta, "") %>% map_chr(~as.character(.x[[2]])),
 #          name = paste0(name, index),
 #          season = str_split(theta, "") %>% map_chr(~as.character(.x[[3]]))) %>%
-#   group_by(id, year, name, index) %>%
-#   summarize(elas = sum(elas)) %>%
-#   group_by(year, name, index) %>%
+#   gather(type, value, elas,elas_asym) %>%
+#   group_by(id, year, name, index, type) %>%
+#   summarize(elas = sum(value)) %>%
+#   group_by(year, name, index, type) %>%
 #   summarize(lo = quantile(elas, probs = c(0.16), na.rm = T),
 #             mi = median(elas, na.rm = T),
 #             hi = quantile(elas, probs = c(0.84), na.rm = T)) %>%
@@ -1004,7 +1007,7 @@ p_lam
 # 
 # # mean across time
 # elast_sum_mean <- elast_sum %>%
-#   group_by(name) %>%
+#   group_by(name, type) %>%
 #   summarize(mi = mean(mi)) %>%
 #   arrange(-mi) %>%
 #   ungroup()
@@ -1013,21 +1016,29 @@ p_lam
 # write_csv(elast_sum_mean, "output/elast_sum_mean.csv")
 
 elast_sum <- read_csv("output/elast_sum.csv") %>%
-  filter(name != "g1")
+  filter(name != "g1") %>%
+  mutate(type = factor(type,
+                       levels = c("elas","elas_asym"),
+                       labels = c("Transient","Asymptotic")))
 elast_sum_mean <- read_csv("output/elast_sum_mean.csv") %>%
-  filter(name != "g1")
+  filter(name != "g1") %>%
+  mutate(type = factor(type,
+                       levels = c("elas","elas_asym"),
+                       labels = c("Transient","Asymptotic")))
 
-# set parameter order
-theta_order <- elast_sum_mean$name 
-theta_labs <- c(expression("surv"["j,n"]),
-                expression("recr"[n]),
-                expression("surv"["a,n"]),
-                # expression("trans"),
+# set parameter names and order
+theta_labs <- c(expression("surv"["j,s"]),
                 expression("surv"["a,s"]),
-                expression("disp"[s%->%n]),
+                expression("surv"["j,n"]),
+                expression("surv"["a,n"]),
                 expression("recr"[s]),
-                expression("surv"["j,s"]),
+                expression("recr"[n]),
+                expression("disp"[s%->%n]),
                 expression("disp"[n%->%s]))
+names(theta_labs) <- c("s1","s2","s3","s4","r1","r2","d1","d2")
+theta_order <- elast_sum_mean$name %>% unique()
+theta_labs <- theta_labs[theta_order]
+
 
 # plot
 p_elas <- ggplot(data = elast_sum %>%
@@ -1036,6 +1047,7 @@ p_elas <- ggplot(data = elast_sum %>%
                           pos = as.numeric(name) - 
                             0.25 * (year - mean(year)) / max((year - mean(year)))) ,
                  aes(pos, mi))+
+  facet_rep_wrap(~type, nrow = 2)+
   geom_hline(yintercept = 0,
              size = 0.2,
              color = "black",
@@ -1063,7 +1075,7 @@ p_elas <- ggplot(data = elast_sum %>%
   scale_x_reverse(Demographic~rate,
                   breaks = 1:8,
                   labels = theta_labs)+
-  scale_y_continuous(Elasticity~of~lambda~(transient),
+  scale_y_continuous(Elasticity~of~lambda,
                      breaks = c(-1.5, 0, 1.5),
                      labels = c("-1.5","0","1.5"),
                      limits = c(-1.61, 1.61))+
@@ -1085,7 +1097,6 @@ p_elas <- ggplot(data = elast_sum %>%
         legend.key.width = unit(0.7, "lines"),
         legend.position = c(0.2,0.9),
         legend.direction = "horizontal",
-        strip.text.x = element_blank(),
         axis.line.x = element_line(size = 0.25),
         axis.line.y = element_line(size = 0.25))+
   coord_capped_flip(left = "both", 
@@ -1096,8 +1107,120 @@ p_elas
 
 # export
 # cairo_pdf(file = "analysis/figures/fig_elas.pdf",
-#           width = 3.5, height = 4, family = "Arial")
+#           width = 3.5, height = 6, family = "Arial")
 # p_elas
 # dev.off()
 
 #=========================================================================================
+
+
+
+years <- proj_output[[1]]$setup$years
+ids <- proj_output[[1]]$setup$ids
+theta_names <- proj_output[[1]]$setup$theta_names
+
+elast <- lapply(ids, function(i_){
+  sens_ = proj_output[[i_]]$sens
+  sens_asym_ = proj_output[[i_]]$sens_asym
+  lapply(1:length(sens_), function(y_){
+    tibble(id = i_,
+           year = unique(years)[y_],
+           elas = as.numeric(sens_[[y_]]$l_elas_p),
+           elas_asym= as.numeric(sens_asym_[[y_]]$l_elas_p)
+    ) %>%
+      mutate(theta = theta_names[row_number()])
+  }) %>%
+    bind_rows()
+}) %>%
+  bind_rows() 
+
+
+elast_sum <- elast %>%
+  mutate(name = str_split(theta, "") %>% map_chr(~as.character(.x[[1]])),
+         index = str_split(theta, "") %>% map_chr(~as.character(.x[[2]])),
+         name = paste0(name, index),
+         season = str_split(theta, "") %>% map_chr(~as.character(.x[[3]]))) %>%
+  gather(type, value, elas,elas_asym) %>%
+  group_by(id, year, name, index, type) %>%
+  summarize(elas = sum(value)) %>%
+  group_by(year, name, index, type) %>%
+  summarize(lo = quantile(elas, probs = c(0.16), na.rm = T),
+            mi = median(elas, na.rm = T),
+            hi = quantile(elas, probs = c(0.84), na.rm = T)) %>%
+  ungroup()
+
+
+# set parameter order
+theta_order <- elast_sum_mean$name 
+theta_labs <- c(expression("surv"["j,n"]),
+                expression("recr"[n]),
+                expression("surv"["a,n"]),
+                # expression("trans"),
+                expression("surv"["a,s"]),
+                expression("recr"[s]),
+                expression("surv"["j,s"]),
+                expression("disp"[s%->%n]),
+                expression("disp"[n%->%s]))
+
+# plot
+ggplot(data = elast_sum %>%
+         ungroup() %>%
+         mutate(name = factor(name, levels = theta_order),
+                pos = as.numeric(name) - 
+                  0.25 * (year - mean(year)) / max((year - mean(year)))) ,
+       aes(pos, mi))+
+  facet_rep_wrap(~type)+
+  geom_hline(yintercept = 0,
+             size = 0.2,
+             color = "black",
+             linetype = 2)+
+  geom_errorbar(aes(ymin = lo,
+                    ymax = hi,
+                    color = year),
+                width = 0,
+                size = 0.2)+
+  geom_point(aes(fill = year,
+                 color = year),
+             size = 1,
+             shape = 21, 
+             stroke = 0.2)+
+  # geom_segment(data = elast_sum_mean %>%
+  #                mutate(name = factor(name, levels = theta_order),
+  #                       pos = as.numeric(name),
+  #                       xmin = pos - 0.3,
+  #                       xmax = pos + 0.3),
+  #              aes(x = xmin,
+  #                  y = mi,
+  #                  xend = xmax,
+  #                  yend = mi),
+  #              size = 0.5)+
+  scale_x_reverse(Demographic~rate,
+                  breaks = 1:8,
+                  labels = theta_labs)+
+  # scale_y_continuous(Elasticity~of~lambda~(transient),
+  #                    breaks = c(-1.5, 0, 1.5),
+  #                    labels = c("-1.5","0","1.5"),
+  #                    limits = c(-1.61, 1.61))+
+  scale_fill_gradient2("",
+                       low ="dodgerblue", 
+                       mid="gray70", 
+                       high="firebrick", 
+                       midpoint = 2005,
+                       breaks = c(1995,2015),
+                       guide = guide_colourbar(ticks = F))+
+  scale_color_gradient2(low ="dodgerblue",
+                        mid="gray70",
+                        high="firebrick",
+                        midpoint = 2005,
+                        guide = F)+
+  theme(panel.border = element_blank(),
+        panel.spacing = unit(0, "lines"),
+        legend.key.height = unit(0.5, "lines"),
+        legend.key.width = unit(0.7, "lines"),
+        legend.position = c(0.2,0.9),
+        legend.direction = "horizontal",
+        # strip.text.x = element_blank(),
+        axis.line.x = element_line(size = 0.25),
+        axis.line.y = element_line(size = 0.25))+
+  coord_capped_flip(left = "both", 
+                    bottom='both')

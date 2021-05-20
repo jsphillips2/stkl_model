@@ -95,21 +95,21 @@ proj_output <- parallel::mclapply(ids, function(id_){
               ip_ = 1)
   
   # project population size derivatives over many time steps (approx. asymptotic)
-  # dX_asym <- dX_fn(annual_proj_ = annual_proj, 
-  #             ip_ = 100)
+  dX_asym <- dX_fn(annual_proj_ = proj,
+              ip_ = 50)
   
   # caluclate transient growth rate, sensitivity, and elasticity
   sens <- sens_fn(dX)
   
   # caluclate asymptotic growth rate, sensitivity, and elasticity 
-  # sens_asym <- sens_fn(dX_asym)
-  
+  sens_asym <- sens_fn(dX_asym)
+
   return(list(setup = setup,
               proj = proj,
               dX = dX,
-              # dX_asym  = dX_asym,
-              sens = sens
-              # sens_asym = sens_asym
+              dX_asym  = dX_asym,
+              sens = sens,
+              sens_asym = sens_asym
               ))
   
 })

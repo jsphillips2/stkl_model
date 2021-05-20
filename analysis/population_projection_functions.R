@@ -315,7 +315,7 @@ dX_fn <- function(annual_proj_, ip_) {
     }
     
     X = aa_array[, , y] %*% X
-    
+
   }
   
   return(list(n = n,
