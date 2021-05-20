@@ -3,7 +3,7 @@
 ## This creates the docx file from the __ms.tex document.
 ## On macOS, you should just be able to click on it from Finder
 
-export name="stkl_ms"
+export name="stkl_ms_alt"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
