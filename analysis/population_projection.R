@@ -14,7 +14,7 @@ options(mc.cores = parallel::detectCores()-6)
 fit_no_juv_move <- read_rds("output/fit_no_juv_move.rds")
 
 # extract data
-data_prep <- fit_no_juv_move$data_prep
+data <- fit_no_juv_move$data
 data_list <- fit_no_juv_move$data_list
 fit <- fit_no_juv_move$fit 
 fit_summary <- fit_no_juv_move$fit_summary 
@@ -22,11 +22,11 @@ pj <- data_list$pj
 nt <- data_list$nt
 n <- data_list$n
 b <- data_list$b
-dates <- unique(data_prep$date)
+dates <- unique(data$date) %>% sort()
 years_all <- lubridate::year(dates)
 years <- years_all[1:(length(years_all) - 2)]
 
-# paramter names for extraction
+# parameter names for extraction
 vars <- {fit_summary %>%
     filter(str_detect(fit_summary$var, "rt") |
            str_detect(fit_summary$var, "rf") |
@@ -98,10 +98,10 @@ proj_output <- parallel::mclapply(ids, function(id_){
   dX_asym <- dX_fn(annual_proj_ = proj,
               ip_ = 50)
   
-  # caluclate transient growth rate, sensitivity, and elasticity
+  # calculate transient growth rate, sensitivity, and elasticity
   sens <- sens_fn(dX)
   
-  # caluclate asymptotic growth rate, sensitivity, and elasticity 
+  # calculate asymptotic growth rate, sensitivity, and elasticity 
   sens_asym <- sens_fn(dX_asym)
 
   return(list(setup = setup,

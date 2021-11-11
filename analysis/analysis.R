@@ -49,8 +49,8 @@ date_limits <-  lubridate::as_date(c("1990-08-01",
 year_breaks <- c(1995, 2005, 2015)
 year_limits = c(1990, 2020)
 
-# extract data 
-data_prep <- fit_full$data_prep %>%
+# extract CPUE data 
+data <- fit_no_juv_move$data_sort %>%
   mutate(stage = factor(stage, 
                         levels = c("small","large"),
                         labels = c("juvenile","adult"))) %>%
@@ -65,7 +65,7 @@ data_prep <- fit_full$data_prep %>%
                                    "adult\nnorth")))
 
 # data frame for matching stages and basins to id's
-state_match <- data_prep %>% 
+state_match <- data %>% 
   tidyr::expand(nesting(state, basin, stage))  %>%
   arrange(basin, stage) %>%
   mutate(st = row_number(),
@@ -80,7 +80,7 @@ state_match <- data_prep %>%
                                    "adult\nnorth")))
 
 # vector of dates for matching with time id's
-date_match <- data_prep$date %>% unique()
+date_match <- data$date %>% unique() %>% sort()
 
 # set theme
 theme_set(theme_bw() %+replace%
@@ -116,13 +116,15 @@ theme_set(theme_bw() %+replace%
 #   lapply(function(x){
 #     xx = models[x]
 #     tibble(model = x,
+#            waic = waic(extract_log_lik(xx[[1]]$fit))$estimates["waic","Estimate"],
 #            looic = loo(xx[[1]]$fit)$estimates["looic","Estimate"],
-#            log_lik = {xx[[1]]$fit_summary %>% 
+#            log_lik = {xx[[1]]$fit_summary %>%
 #                filter(str_detect(var, "log_lik_sum"))}$`50%`
 #     )
 #   }) %>%
 #   bind_rows()
 # 
+# # export
 # write_csv(model_compare, "output/model_compare.csv")
 
 # read survival
@@ -166,10 +168,7 @@ trans_sum_write
 #========== Model fits
 #=========================================================================================
 
-# extract scaling parameter
-y_scale <- fit_full$y_scale
-
-# extract fits
+# # extract fits
 # fits_write <- model_names %>%
 #   lapply(function(x){
 #     xx = models[x]
@@ -182,10 +181,15 @@ y_scale <- fit_full$y_scale
 #              name = str_split(var, "\\[|\\]|,") %>% map_chr(~as.character(.x[1])),
 #              st = str_split(var, "\\[|\\]|,") %>% map_int(~as.integer(.x[2])),
 #              time = str_split(var, "\\[|\\]|,") %>% map_int(~as.integer(.x[3])),
-#              date = date_match[time]) 
+#              date = date_match[time],
+#              kappa = fit_no_juv_move$data_list$s[st],
+#              lo = lo / kappa,
+#              mi = mi / kappa,
+#              hi = hi / kappa)
 #   }) %>%
 #   bind_rows()
 # 
+# # export
 # write_csv(fits_write, "output/fits_write.csv")
 
 # read survival
@@ -210,8 +214,8 @@ labs <- fits %>%
 
 # plot
 p_fit <- ggplot(data = fits,
-             aes(x = date,
-                 y = mi))+
+                aes(x = date,
+                    y = mi))+
   facet_rep_wrap(~state)+
   geom_text(data = labs,
             aes(label = state,
@@ -220,11 +224,13 @@ p_fit <- ggplot(data = fits,
             color = "black",
             size = 3.2,
             inherit.aes = F)+
-  geom_point(data = data_prep,
-             aes(y = mean_scale / y_scale),
+  geom_point(data = data %>% mutate(cpue = cpue / mean(cpue)) %>%
+               group_by(date, state) %>%
+               summarize(cpue = mean(cpue)),
+             aes(y = cpue),
              shape = 21,
-             size = 0.8,
-             alpha = 0.4,
+             size = 0.85,
+             alpha = 0.5,
              fill = "black",
              stroke = 0.2)+
   geom_ribbon(aes(ymin = lo,
@@ -244,8 +250,8 @@ p_fit <- ggplot(data = fits,
   scale_color_manual("",
                      values = c("black", "firebrick2","royalblue3","orange1"))+
   scale_fill_manual("",
-                     values = c("gray70", "firebrick2","royalblue3","orange1"))+
-    
+                    values = c("gray70", "firebrick2","royalblue3","orange1"))+
+  
   theme(legend.key.height = unit(0.5, "lines"),
         legend.key.width = unit(0.7, "lines"),
         legend.position = "top",
@@ -271,11 +277,7 @@ p_fit <- ggplot(data = fits,
 p_fit
 
 # export
-# cairo_pdf(file = "analysis/figures/fig_fit.pdf",
-#           width = 3.5, height = 3.5, family = "Arial")
-# p_fit
-# dev.off()
-
+# ggsave(plot = p_fit, file = "analysis/figures/p_fit.pdf", width = 3.5, height = 3.5)
 
 #=========================================================================================
 
@@ -287,17 +289,15 @@ p_fit
 #========== Recruitment
 #=========================================================================================
 
-# # extract
-# ids <- proj_no_juv_move [[1]]$setup$ids
+# extract
+# ids <- proj_no_juv_move[[1]]$setup$ids
 # # extract
 # rec_full <- parallel::mclapply(ids, function(i_){
 #   proj_ = proj_no_juv_move [[i_]]$proj
 #   RR_ = proj_$RR
-#   x_ = proj_$x
 #   lapply(1:dim(RR_)[3], function(t_){
 #     tibble(id = i_,
 #            rec = c(RR_[c(1,3),c(2,4),t_])[c(1,4)],
-#            x = x_[c(2,4), t_],
 #            date = date_match[t_]
 #     ) %>%
 #       filter(rec > 0) %>%
@@ -332,10 +332,10 @@ rec_sum <- read_csv("output/rec_sum_write.csv") %>%
 labs <- rec_sum %>%
   tidyr::expand(basin) %>%
   mutate(x = lubridate::as_date("2005-07-01"),
-         y = 9)
+         y = 5.9)
 
 # plot
-p_rec_a <- ggplot(data = rec_sum,
+p_rec <- ggplot(data = rec_sum,
                  aes(x = date,
                      y = mi))+
   facet_rep_wrap(~basin,
@@ -352,8 +352,8 @@ p_rec_a <- ggplot(data = rec_sum,
               alpha = 0.2)+
   geom_line(size = 0.4)+
   scale_y_continuous(name = Recruitment~capita^{-1},
-                     limits = c(0, 10),
-                     breaks = c(0, 4, 8))+
+                     limits = c(0, 6),
+                     breaks = c(0, 2, 4, 6))+
   scale_x_date(name = "Date",
                limits = date_limits,
                breaks = date_breaks,
@@ -374,81 +374,18 @@ p_rec_a <- ggplot(data = rec_sum,
 
 
 # examine
-p_rec_a
+p_rec
 
+# export
+# ggsave(plot = p_rec, file = "analysis/figures/fig_rec.pdf", width = 3.5, height = 2)
 
 #  covariance matrix
-r_covmat <- rec_sum %>%
+r_cormat <- rec_sum %>%
   select(date, basin,  mi) %>%
   pivot_wider(names_from =  basin, values_from = mi) %>%
   select(-date) %>%
   as.matrix() %>%
-  cov()
-r_covmat <- (r_covmat / mean(r_covmat)) 
-r_covmat_d <- r_covmat %>% 
-  as_tibble() %>%
-  mutate(row = c("south","north")) %>%
-  pivot_longer(cols = c(south,north)) %>%
-  mutate(x = as.numeric(factor(row,levels = c("south","north"))),
-         y = as.numeric(factor(name,levels = c("south","north")))) %>%
-  filter(!(x == 2 & y == 1))
-
-# plot covariance
-p_rec_b <- ggplot(data = r_covmat_d,
-                    aes(x = x,
-                        y = -y,
-                        fill = value))+
-  geom_tile()+
-  geom_text(aes(x = x,
-                y = -y,
-                label = round(value, 1)),
-            size = 3.5,
-            fontface = "plain")+
-  scale_x_continuous("",
-                     breaks = c(1, 2),
-                     labels = c("south",
-                                "north"))+
-  scale_y_continuous("",
-                     breaks = c(-1, -2),
-                     labels = c("south",
-                                "north"))+
-  scale_fill_gradient(name = "",
-                       low="gray90", 
-                       high="firebrick", 
-                       limits = c(0.5, 1.7),
-                       guide = F)+
-  coord_equal()+
-  theme(panel.border = element_blank(),
-        axis.line.x = element_line(size = 0.25),
-        axis.line.y = element_line(size = 0.25))
-
-# examine
-p_rec_b
-
-# combine
-p_rec <- plot_grid(NULL, p_rec_a, NULL, p_rec_b,
-                   ncol = 1,
-                   rel_heights = c(0.05, 1.3, 0.15, 1),
-                   align = "v",
-                   axis = "tblr",
-                   labels = c("",
-                              "a",
-                              "",
-                              "b"),
-                   label_size = 12,
-                   label_fontface = "plain",
-                   hjust = c(0, 0, 0),
-                   vjust = c(0,0.1,0,0))
-
-# examine
-p_rec
-
-# export
-# cairo_pdf(file = "analysis/figures/fig_rec.pdf",
-#           width = 3.5, height = 4.3, family = "Arial")
-# p_rec
-# dev.off()
-
+  cor()
 
 #=========================================================================================
 
@@ -502,7 +439,7 @@ labs <- surv_sum %>%
          y = 1.2)
 
 # plot
-p_surv_a <- ggplot(data = surv_sum,
+p_surv <- ggplot(data = surv_sum,
                 aes(x = date,
                     y = mi))+
   facet_rep_wrap(~state)+
@@ -541,98 +478,18 @@ p_surv_a <- ggplot(data = surv_sum,
 
 
 # examine
-p_surv_a
+p_surv
+
+# export
+# ggsave(plot = p_surv, file = "analysis/figures/fig_surv.pdf", width = 3.5, height = 3.5)
 
 #  covariance matrix
-s_covmat <- surv_sum %>%
+s_cormat <- surv_sum %>%
   select(date, state,  mi) %>%
   pivot_wider(names_from =  state, values_from = mi) %>%
   select(-date) %>%
   as.matrix() %>%
-  cov()
-s_covmat <- (s_covmat / mean(s_covmat)) 
-s_covmat <- s_covmat %>% 
-  as_tibble() %>%
-  mutate(row = c("juvenile\nsouth",
-                 "adult\nsouth",
-                 "juvenile\nnorth",
-                 "adult\nnorth")) %>%
-  pivot_longer(cols = c("juvenile\nsouth",
-                        "adult\nsouth",
-                        "juvenile\nnorth",
-                        "adult\nnorth")) %>%
-  mutate(x = as.numeric(factor(row,levels = c("juvenile\nsouth",
-                                              "adult\nsouth",
-                                              "juvenile\nnorth",
-                                              "adult\nnorth"))),
-         y = as.numeric(factor(name,levels = c("juvenile\nsouth",
-                                               "adult\nsouth",
-                                               "juvenile\nnorth",
-                                               "adult\nnorth")))) %>%
-  filter(!(x > y))
-
-# plot covariance
-p_surv_b <- ggplot(data = s_covmat,
-                    aes(x = x,
-                        y = -y,
-                        fill = value))+
-  geom_tile()+
-  geom_text(aes(x = x,
-                y = -y,
-                label = round(value, 1)),
-            size = 3.5,
-            fontface = "plain")+
-  scale_x_continuous("",
-                     breaks = c(1:4),
-                     labels = c("juvenile\nsouth",
-                                "adult\nsouth",
-                                "juvenile\nnorth",
-                                "adult\nnorth"))+
-  scale_y_continuous("",
-                     breaks = -c(1:4),
-                     labels = c("juvenile\nsouth",
-                                "adult\nsouth",
-                                "juvenile\nnorth",
-                                "adult\nnorth"))+
-  scale_fill_gradient(name = "",
-                      low="gray90", 
-                      high="firebrick", 
-                      limits = c(0.5, 1.65),
-                      guide = F)+
-  coord_equal()+
-  theme(panel.border = element_blank(),
-        axis.line.x = element_line(size = 0.25),
-        axis.line.y = element_line(size = 0.25))
-
-# examine
-p_surv_b
-
-
-# combine
-p_surv <- plot_grid(NULL, p_surv_a, NULL, p_surv_b,
-                   ncol = 1,
-                   rel_heights = c(0.05, 1.3, 0.15, 1),
-                   align = "v",
-                   axis = "tblr",
-                   labels = c("",
-                              "a",
-                              "",
-                              "b"),
-                   label_size = 12,
-                   label_fontface = "plain",
-                   hjust = c(0, 0, 0),
-                   vjust = c(0,0,0,0))
-
-# examine
-p_surv
-
-# export
-# cairo_pdf(file = "analysis/figures/fig_surv.pdf",
-#           width = 3.5, height = 6.75, family = "Arial")
-# p_surv
-# dev.off()
-
-
+  cor()
 
 #=========================================================================================
 
@@ -695,15 +552,15 @@ p_surv
 # write_csv(disp_net, "output/disp_net.csv")
 
 # read dispersal
-# disp_sum <- read_csv("output/disp_sum.csv") %>%
-#   mutate(basin = factor(basin,
-#                         levels = c("south","north"),
-#                         labels = c("south","north")))
-# disp_net <- read_csv("output/disp_net.csv")
+disp_sum <- read_csv("output/disp_sum.csv") %>%
+  mutate(basin = factor(basin,
+                        levels = c("south","north"),
+                        labels = c("south","north")))
+disp_net <- read_csv("output/disp_net.csv")
 
 # plot labels
 labs <- tibble(x = lubridate::as_date("1993-07-01"),
-               y = c(-3.3, 1),
+               y = c(-3.45, 2),
                label = c("southward",
                          "northward"))
 
@@ -727,8 +584,8 @@ p_disp <- ggplot(data = disp_net,
             size = 3.2,
             inherit.aes = F)+
   scale_y_continuous(name = Net~dispersal,
-                     breaks = c(-3, -2, -1, 0, 1),
-                     limits = c(-3.35, 1.5))+
+                     breaks = c(-3, -2, -1, 0, 1, 2),
+                     limits = c(-3.5, 2.5))+
   scale_x_date(name = "Date",
                limits = date_limits,
                breaks = date_breaks,
@@ -751,11 +608,7 @@ p_disp <- ggplot(data = disp_net,
 p_disp
 
 # export
-# cairo_pdf(file = "analysis/figures/fig_disp.pdf",
-#           width = 3.5, height = 2.5, family = "Arial")
-# p_disp
-# dev.off()
-
+# ggsave(plot = p_disp, file = "analysis/figures/fig_disp.pdf", width = 3.5, height = 2.5)
 
 #=========================================================================================
 
@@ -920,7 +773,7 @@ p_lam_b <- ggplot(data = wave_d,
                        midpoint = 0.1,
                        limits = c(0, 1.3),
                        breaks = c(0.1, 1.2),
-                       guide = F)+
+                       guide = "none")+
   theme(strip.text = element_blank(),
         panel.border = element_blank(),
         panel.spacing.x = unit(0.25, "lines"),
@@ -953,10 +806,7 @@ p_lam <- plot_grid(NULL, p_lam_a, NULL, p_lam_b,
 p_lam
 
 # export
-# cairo_pdf(file = "analysis/figures/fig_lam.pdf",
-#           width = 5, height = 4.25, family = "Arial")
-# p_lam
-# dev.off()
+# ggsave(plot = p_lam, file = "analysis/figures/fig_lam.pdf", width = 5, height = 4.25)
 
 #=========================================================================================
 
@@ -1039,188 +889,89 @@ names(theta_labs) <- c("s1","s2","s3","s4","r1","r2","d1","d2")
 theta_order <- elast_sum_mean$name %>% unique()
 theta_labs <- theta_labs[theta_order]
 
+elsa_sum_plot <- elast_sum %>%
+  ungroup() %>%
+  mutate(name = factor(name, levels = theta_order),
+         pos = as.numeric(name) - 
+           0.35 * (year - mean(year)) / max((year - mean(year))))
+
+# plot labels
+labs <- elsa_sum_plot %>%
+  tidyr::expand(type) %>%
+  mutate(x = mean(elsa_sum_plot$pos),
+         y = 1.1)
+
+# bracket
+bracket <- elsa_sum_plot %>%
+  tidyr::expand(type) %>%
+  mutate(x1 = c(4.6,NA),
+         x2 = c(5.4,NA),
+         y0 = c(-0.2, NA),
+         y1 = c(-0.3,NA),
+         y2 = c(-0.4,NA))
 
 # plot
-p_elas <- ggplot(data = elast_sum %>%
-                   ungroup() %>%
-                   mutate(name = factor(name, levels = theta_order),
-                          pos = as.numeric(name) - 
-                            0.25 * (year - mean(year)) / max((year - mean(year)))) ,
-                 aes(pos, mi))+
+p_elas <- ggplot(data =  elsa_sum_plot,
+                 aes(x = pos, 
+                     y = mi))+
   facet_rep_wrap(~type, nrow = 2)+
+  geom_text(data = labs,
+            aes(label = type,
+                x = x,
+                y = y),
+            color = "black",
+            size = 3.2,
+            inherit.aes = F)+
   geom_hline(yintercept = 0,
              size = 0.2,
              color = "black",
              linetype = 2)+
-  geom_errorbar(aes(ymin = lo,
-                    ymax = hi,
-                    color = year),
-                width = 0,
-                size = 0.2)+
-  geom_point(aes(fill = year,
-                 color = year),
-             size = 1,
-             shape = 21, 
-             stroke = 0.2)+
-  geom_segment(data = elast_sum_mean %>%
-                 mutate(name = factor(name, levels = theta_order),
-                        pos = as.numeric(name),
-                        xmin = pos - 0.3,
-                        xmax = pos + 0.3),
-               aes(x = xmin,
-                   y = mi,
-                   xend = xmax,
-                   yend = mi),
+  geom_ribbon(aes(ymin = lo,
+                  ymax = hi,
+                  group = name),
+              linetype = 0,
+              alpha = 0.3)+
+  geom_line(aes(group = name),
+            size = 0.3)+
+  geom_segment(data = bracket,
+               aes(x = x1, xend = x2, y = y1, yend = y1),
                size = 0.5)+
+  geom_segment(data = bracket,
+               aes(x = x1+0.019, xend = x1+0.019, y = y0, yend = y1-0.01),
+               size = 0.5)+
+  geom_segment(data = bracket,
+               aes(x = x2-0.019, xend = x2-0.019, y = y0, yend = y1-0.01),
+               size = 0.5)+
+  geom_text(data = bracket,
+            aes(x = x2+0.25, y = y2), 
+            label = "1990",
+            size = 2.75)+
+  geom_text(data = bracket,
+            aes(x = x1-0.25, y = y2), 
+            label = "2020",
+            size = 2.75)+
   scale_x_reverse(Demographic~rate,
                   breaks = 1:8,
                   labels = theta_labs)+
   scale_y_continuous(Elasticity~of~lambda,
-                     breaks = c(-1.5, 0, 1.5),
-                     labels = c("-1.5","0","1.5"),
-                     limits = c(-1.61, 1.61))+
-  scale_fill_gradient2("",
-                       low ="dodgerblue", 
-                       mid="gray70", 
-                       high="firebrick", 
-                       midpoint = 2005,
-                       breaks = c(1995,2015),
-                       guide = guide_colourbar(ticks = F))+
-  scale_color_gradient2(low ="dodgerblue",
-                        mid="gray70",
-                        high="firebrick",
-                        midpoint = 2005,
-                        guide = F)+
+                     breaks = c(-1, 0, 1),
+                     labels = c("-1","0","1"),
+                     limits = c(-1.1, 1.1))+
   theme(panel.border = element_blank(),
         panel.spacing = unit(0, "lines"),
-        legend.key.height = unit(0.5, "lines"),
-        legend.key.width = unit(0.7, "lines"),
-        legend.position = c(0.2,0.9),
-        legend.direction = "horizontal",
         axis.line.x = element_line(size = 0.25),
-        axis.line.y = element_line(size = 0.25))+
-  coord_capped_flip(left = "both", 
-                    bottom='both')
+        axis.line.y = element_line(size = 0.25),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        panel.spacing.y = unit(-1.5, "lines"),
+        strip.text.x = element_blank())+
+  coord_capped_cart(left = "top", 
+                    bottom='none',
+                    gap = 0)
 
 # examine plot
 p_elas
 
 # export
-# cairo_pdf(file = "analysis/figures/fig_elas.pdf",
-#           width = 3.5, height = 6, family = "Arial")
-# p_elas
-# dev.off()
+# ggsave(plot = p_elas, file = "analysis/figures/fig_elas.pdf", width = 3.5, height = 4)
 
 #=========================================================================================
-
-
-
-years <- proj_output[[1]]$setup$years
-ids <- proj_output[[1]]$setup$ids
-theta_names <- proj_output[[1]]$setup$theta_names
-
-elast <- lapply(ids, function(i_){
-  sens_ = proj_output[[i_]]$sens
-  sens_asym_ = proj_output[[i_]]$sens_asym
-  lapply(1:length(sens_), function(y_){
-    tibble(id = i_,
-           year = unique(years)[y_],
-           elas = as.numeric(sens_[[y_]]$l_elas_p),
-           elas_asym= as.numeric(sens_asym_[[y_]]$l_elas_p)
-    ) %>%
-      mutate(theta = theta_names[row_number()])
-  }) %>%
-    bind_rows()
-}) %>%
-  bind_rows() 
-
-
-elast_sum <- elast %>%
-  mutate(name = str_split(theta, "") %>% map_chr(~as.character(.x[[1]])),
-         index = str_split(theta, "") %>% map_chr(~as.character(.x[[2]])),
-         name = paste0(name, index),
-         season = str_split(theta, "") %>% map_chr(~as.character(.x[[3]]))) %>%
-  gather(type, value, elas,elas_asym) %>%
-  group_by(id, year, name, index, type) %>%
-  summarize(elas = sum(value)) %>%
-  group_by(year, name, index, type) %>%
-  summarize(lo = quantile(elas, probs = c(0.16), na.rm = T),
-            mi = median(elas, na.rm = T),
-            hi = quantile(elas, probs = c(0.84), na.rm = T)) %>%
-  ungroup()
-
-
-# set parameter order
-theta_order <- elast_sum_mean$name 
-theta_labs <- c(expression("surv"["j,n"]),
-                expression("recr"[n]),
-                expression("surv"["a,n"]),
-                # expression("trans"),
-                expression("surv"["a,s"]),
-                expression("recr"[s]),
-                expression("surv"["j,s"]),
-                expression("disp"[s%->%n]),
-                expression("disp"[n%->%s]))
-
-# plot
-ggplot(data = elast_sum %>%
-         ungroup() %>%
-         mutate(name = factor(name, levels = theta_order),
-                pos = as.numeric(name) - 
-                  0.25 * (year - mean(year)) / max((year - mean(year)))) ,
-       aes(pos, mi))+
-  facet_rep_wrap(~type)+
-  geom_hline(yintercept = 0,
-             size = 0.2,
-             color = "black",
-             linetype = 2)+
-  geom_errorbar(aes(ymin = lo,
-                    ymax = hi,
-                    color = year),
-                width = 0,
-                size = 0.2)+
-  geom_point(aes(fill = year,
-                 color = year),
-             size = 1,
-             shape = 21, 
-             stroke = 0.2)+
-  # geom_segment(data = elast_sum_mean %>%
-  #                mutate(name = factor(name, levels = theta_order),
-  #                       pos = as.numeric(name),
-  #                       xmin = pos - 0.3,
-  #                       xmax = pos + 0.3),
-  #              aes(x = xmin,
-  #                  y = mi,
-  #                  xend = xmax,
-  #                  yend = mi),
-  #              size = 0.5)+
-  scale_x_reverse(Demographic~rate,
-                  breaks = 1:8,
-                  labels = theta_labs)+
-  # scale_y_continuous(Elasticity~of~lambda~(transient),
-  #                    breaks = c(-1.5, 0, 1.5),
-  #                    labels = c("-1.5","0","1.5"),
-  #                    limits = c(-1.61, 1.61))+
-  scale_fill_gradient2("",
-                       low ="dodgerblue", 
-                       mid="gray70", 
-                       high="firebrick", 
-                       midpoint = 2005,
-                       breaks = c(1995,2015),
-                       guide = guide_colourbar(ticks = F))+
-  scale_color_gradient2(low ="dodgerblue",
-                        mid="gray70",
-                        high="firebrick",
-                        midpoint = 2005,
-                        guide = F)+
-  theme(panel.border = element_blank(),
-        panel.spacing = unit(0, "lines"),
-        legend.key.height = unit(0.5, "lines"),
-        legend.key.width = unit(0.7, "lines"),
-        legend.position = c(0.2,0.9),
-        legend.direction = "horizontal",
-        # strip.text.x = element_blank(),
-        axis.line.x = element_line(size = 0.25),
-        axis.line.y = element_line(size = 0.25))+
-  coord_capped_flip(left = "both", 
-                    bottom='both')

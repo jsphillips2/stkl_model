@@ -9,23 +9,15 @@ library(cowplot)
 library(lemon)
 library(ggsn)
 
-# import abundance data
-abundance <- read_csv("data/counts89_20.csv") %>%
-  filter(station != "BV") %>%
-  mutate(basin = ifelse(basin == "east", "south", basin),
-         basin = factor(basin, levels = c("north","south")),
-         size_class = factor(size_class, levels = c("small","large")),
-         day_night = factor(day_night, levels = c("D","N")),
-         count = ifelse(year==2016 & is.na(count), 0, count),
-         date = ymd(paste(year, month, 1, sep = "_")),
-         l_group = as.numeric(factor(paste(basin, size_class, date)))
-  ) %>%
-  mutate(stage = factor(size_class,
-                        levels = c("small",
-                                   "large"),
-                        labels = c("juvenile",
-                                   "adult")),
-         state = factor(interaction(stage, basin),
+# import model objects
+fit_full <- read_rds("output/fit_no_juv_move.rds")
+
+# extract CPUE data 
+data <- fit_no_juv_move$data_sort %>%
+  mutate(stage = factor(stage, 
+                        levels = c("small","large"),
+                        labels = c("juvenile","adult"))) %>%
+  mutate(state = factor(interaction(stage, basin),
                         levels = c("juvenile.south",
                                    "juvenile.north",
                                    "adult.south",
@@ -33,15 +25,7 @@ abundance <- read_csv("data/counts89_20.csv") %>%
                         labels = c("juvenile\nsouth",
                                    "juvenile\nnorth",
                                    "adult\nsouth",
-                                   "adult\nnorth")),
-         station = factor(station,
-                          levels = c("23","27","41","44","135","124","128","DN")))
-
-# import fits
-fit_sum <- read_csv("data/fit.csv")
-
-# import betas
-betas <- read_csv("data/betas.csv")
+                                   "adult\nnorth")))
 
 # define datebreaks / limits
 date_breaks <- lubridate::as_date(c("1995-06-01",
@@ -56,7 +40,22 @@ year_breaks <- c(1995, 2005, 2015)
 year_limits = c(1990, 2020)
 
 # vector of dates for matching with time id's
-date_match <- abundance$date %>% unique()
+date_match <- data$date %>% unique()
+
+# data frame for matching stages and basins to id's
+state_match <- data %>% 
+  tidyr::expand(nesting(state, basin, stage))  %>%
+  arrange(basin, stage) %>%
+  mutate(st = row_number(),
+         state = factor(interaction(stage, basin),
+                        levels = c("juvenile.south",
+                                   "juvenile.north",
+                                   "adult.south",
+                                   "adult.north"),
+                        labels = c("juvenile\nsouth",
+                                   "juvenile\nnorth",
+                                   "adult\nsouth",
+                                   "adult\nnorth")))
 
 # define station colors
 station_colors <- c("skyblue3","firebrick3","magenta4","darkorange","goldenrod",
@@ -82,80 +81,6 @@ theme_set(theme_bw() %+replace%
                   axis.title.x = element_text(margin = margin(5,0,0,0)),
                   panel.spacing = unit(0.1, "lines"),
                   axis.ticks = element_line(size = 0.25)))
-
-#=========================================================================================
-
-
-
-
-
-#=========================================================================================
-#========== Detection-corrected fit
-#=========================================================================================
-
-# beta intercept
-beta_int <- {betas %>%
-    filter(name %in% c("(Intercept)"))}$median
-
-# beta night
-base_night <- {betas %>%
-    filter(name %in% c("day_nightN","size_classlarge:day_nightN")) %>%
-    summarize(val = mean(median))}$val
-
-# beta basin (average over station)
-beta_basin <- betas %>%
-  filter(!(name %in% c("(Intercept)","day_nightN","size_classlarge:day_nightN",
-                       "size_classlarge"))) %>%
-  mutate(station = strsplit(name, "station") %>% map_chr(~.x[2])) %>%
-  select(station, median) %>%
-  left_join(abundance %>%
-              tidyr::expand(nesting(station, basin))) %>%
-  group_by(basin) %>%
-  summarize(beta_basin = mean(median))
-
-# beta by size_class
-beta_size <- betas %>%
-  filter(name %in% c("size_classlarge")) %>%
-  select(mean) %>%
-  rename(beta_size = mean) %>%
-  mutate(size_class = "large") %>%
-  bind_rows(tibble(size_class = "small",
-                   beta_size = 0))
-
-# extract fit
-l_fit <- fit_sum %>%
-  filter(str_detect(.$rowname, "lam\\[")) %>%
-  mutate(l_group = strsplit(rowname, "\\[|\\]|,") %>% map_int(~as.integer(.x[2]))) %>%
-  select(mean, sd, lower95, lower68, median, upper68, upper95, l_group) %>%
-  full_join(abundance %>%
-              expand(nesting(date, basin, size_class, l_group))) %>%
-  arrange(size_class, basin, date)
-
-
-# calculate expected catch
-trap_fit <- l_fit %>%
-  select(date, basin, size_class, median) %>%
-  left_join(beta_basin) %>%
-  left_join(beta_size) %>%
-  mutate(alpha = beta_int + base_night + beta_basin + beta_size,
-         phi = exp(alpha) / (1 + exp(alpha)),
-         est = phi * median) %>%
-  select(date, basin, size_class, phi, est) %>%
-  mutate(stage = factor(size_class,
-                        levels = c("small",
-                                   "large"),
-                        labels = c("juvenile",
-                                   "adult")),
-         state = factor(interaction(stage, basin),
-                        levels = c("juvenile.south",
-                                   "juvenile.north",
-                                   "adult.south",
-                                   "adult.north"),
-                        labels = c("juvenile\nsouth",
-                                   "juvenile\nnorth",
-                                   "adult\nsouth",
-                                   "adult\nnorth")))
-
 
 #=========================================================================================
 
@@ -196,10 +121,10 @@ p_map <- myv_df %>%
                 label = station,
                 color = station),
             size = 2.5)+
-  scale_fill_manual("",values = c("gray95",rep("white", 18)), guide = F)+
+  scale_fill_manual("",values = c("gray95",rep("white", 18)), guide = "none")+
   scale_color_manual("",
                      values = station_colors,
-                     guide = F)+
+                     guide = "none")+
   scalebar(myv_df, dist = 2, dist_unit = "km",st.bottom = F,
            location = "topleft",st.size = 2.5, st.dist = 0.03,
            border.size = 0.2,anchor = anchor_scale,
@@ -221,15 +146,33 @@ p_map
 #========== Plot trapping data
 #=========================================================================================
 
+# estimated relative population size
+x_clean <- fit_full$fit_summary %>%
+  select(var, `16%`, `50%`, `84%`) %>%
+  rename(lo = `16%`, mi = `50%`, hi = `84%`) %>%
+  filter(str_detect(fit_full$fit_summary$var, "x"), 
+         !str_detect(fit_full$fit_summary$var, "x0")) %>%
+  mutate(name = str_split(var, "\\[|\\]|,") %>% map_chr(~as.character(.x[1])),
+         st = str_split(var, "\\[|\\]|,") %>% map_int(~as.integer(.x[2])),
+         time = str_split(var, "\\[|\\]|,") %>% map_int(~as.integer(.x[3])),
+         date = date_match[time],
+         kappa = fit_full$data_list$s[st],
+         lo = lo / kappa,
+         mi = mi / kappa,
+         hi = hi / kappa) %>%
+  full_join(state_match) %>%
+  select(basin, state, stage, date, kappa, name, lo, mi, hi) 
+
 # plot labels
-labs <- abundance %>%
+labs <- data %>%
   tidyr::expand(state) %>%
   mutate(x = lubridate::as_date("2005-07-01"),
-         y = 570)
+         y = 14)
 
-p_trap <- ggplot(data = abundance,
+# plot
+p_trap <- ggplot(data = data,
                  aes(x = date,
-                     y = count))+
+                     y = cpue / mean(cpue)))+
   facet_rep_wrap(~state)+
   geom_text(data = labs,
             aes(label = state,
@@ -238,23 +181,22 @@ p_trap <- ggplot(data = abundance,
             color = "black",
             size = 3.2,
             inherit.aes = F)+
-  geom_point(aes(color = station),
-             size = 0.6,
-             alpha = 0.5,
-             shape = 16)+
-  geom_line(data = trap_fit,
-            aes(y = est),
-            size = 0.5)+
-  scale_y_continuous(name = Trap~catch,
-                     limits = c(0, 600),
-                     breaks = c(0, 300, 600))+
+  geom_line(aes(color = station),
+             size = 0.3,
+            alpha = 0.8)+
+  geom_line(data = x_clean,
+            aes(y = mi),
+            size = 0.6)+
+  scale_y_continuous(name = "Scaled CPUE",
+                     limits = c(0, 16),
+                     breaks = c(0, 5, 10, 15))+
   scale_x_date(name = "Date",
                limits = date_limits,
                breaks = date_breaks[c(1,3)],
                labels = year_breaks[c(1,3)])+
   scale_color_manual("",
                      values = station_colors,
-                     guide = F)+
+                     guide = "none")+
   theme(legend.key.height = unit(1, "lines"),
         legend.key.width = unit(0.7, "lines"),
         legend.text = element_text(margin = margin(l = -10)),
@@ -305,10 +247,6 @@ p_data
 
 
 # export
-# cairo_pdf(file = "analysis/figures/fig_data.pdf",
-#           width = 3.5, height = 7, family = "Arial")
-# p_data
-# dev.off()
-
+# ggsave(plot = p_data, file = "analysis/figures/fig_data.pdf", width = 3.5, height = 7)
 
 #=========================================================================================

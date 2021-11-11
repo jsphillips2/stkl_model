@@ -59,11 +59,15 @@ data {
   
   // declare variables
   int <lower = 1> n; // number of states
+  int <lower = 1> nc; // number of stage classes
   int <lower = 1> nt; // number of time-steps
-  matrix <lower = 0> [n, nt] y; // observed abundance
+  int <lower = 1> ns; // number of stations
+  int <lower = 1> m[ns, nc]; // map stations x staage claasses to states
+  real y[nc, ns, nt]; // observed abundance
   int <lower = 0> j[8]; // number of positions for each demographic parameter
   int <lower = 0> pj [n * n, 3, 8]; // position array for rates
   vector [nt - 1] b; // season index and tim step sizes 
+  real s[n]; // scaling factor
   real p[4]; // values for priors
 
 }
@@ -238,7 +242,7 @@ transformed parameters {
 model {
   
   // scales
-  ys ~ gamma(1.5, 1.5 / p[1]); 
+  ys ~ gamma(1.5, 1.5 / p[1]);
   rs ~ gamma(1.5, 1.5 / p[2]); 
   ps ~ gamma(1.5, 1.5 / p[3]);
   
@@ -315,15 +319,17 @@ model {
   
   // initial abundance
   for (i in 1:n) {
-    x0[i] ~ gamma(1.5, 1.5 / p[4]);
+    x0[i] ~ exponential(1 / p[4]);
   } // i
   
   
   
   // likelihood
-  for (i in 1:n){
-    y[i, 1:nt] ~ normal(x[i, 1:nt], ys); 
-  } // i
+  for (k in 1:ns){
+    for (i in 1:nc) {
+      y[i, k, ] ~ normal(x[m[k, i], ] / s[m[k, i]], ys);
+    } // i
+  } // k
 
   
 }
@@ -333,27 +339,25 @@ model {
 
 
 generated quantities {
-  
+
   // declare variables
-  real log_lik [n * nt]; // pointwise log-likelihood
+  real log_lik [nc * ns * nt]; // pointwise log-likelihood
   real log_lik_sum; // total log-likelihood
   
+  // pointwise log-likelihood
   {
-    
-    // convert matrices to vectors
-    vector [n * nt] yy;
-    vector [n * nt] xx;
-    yy = to_vector(y);
-    xx = to_vector(x);
-    
-    // pointwise log-likelihood
-    for (i in 1 : (n * nt)) {
-      log_lik[i] = normal_lpdf(yy[i] | xx[i], ys);
-    }
-    
-  }  
-  
-  // total log-likelihood
+    int pos = 1;
+    for (t in 1:nt) {
+      for (k in 1:ns){
+        for (i in 1:nc) {
+          log_lik[pos] = normal_lpdf(y[i, k, t] | x[m[k, i], t] / s[m[k, i]], ys);
+          pos += 1;
+        } // i
+      } // k
+    } // t
+  }
+
+  // total log-likelihood 
   log_lik_sum = sum(log_lik);
   
 }

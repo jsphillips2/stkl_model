@@ -63,8 +63,7 @@ proj_fn <- function(extract_, pj_, nt_, n_, b_, years_, theta_names_) {
   Gf <- matrix(0, nrow = n_, ncol = n_)
   Dt <- matrix(0, nrow = n_, ncol = n_)
   Df <- matrix(0, nrow = n_, ncol = n_)
-  # no_D <- matrix(0, nrow = n_, ncol = n_)
-  
+
   ### define arrays for filling 
   RR <- array(0, dim = c(n_, n_, nt_ - 1))
   QQ <- array(0, dim = c(n_, n_, nt_ - 1))
@@ -72,12 +71,6 @@ proj_fn <- function(extract_, pj_, nt_, n_, b_, years_, theta_names_) {
   DD <- array(0, dim = c(n_, n_, nt_ - 1))
   AA <- array(0, dim = c(n_, n_, nt_ - 1))
   x <- array(0, dim = c(n_, nt_))
-  # noDD <- array(0, dim = c(n_, n_, nt_ - 1))   # matrix for no dispersal
-  # AA_noD <- array(0, dim = c(n_, n_, nt_ - 1)) # matrix for no dispersal
-  # x_noD <- array(0, dim = c(n_, nt_))          # matrix for no dispersal
-  # QQs <- array(0, dim = c(n_, n_, nt_ - 1)) # standardized time steps
-  # GGs <- array(0, dim = c(n_, n_, nt_ - 1)) # standardized time steps
-  # DDs <- array(0, dim = c(n_, n_, nt_ - 1)) # standardized time steps
   
   
   
@@ -97,8 +90,7 @@ proj_fn <- function(extract_, pj_, nt_, n_, b_, years_, theta_names_) {
   
   ### set initial population size
   x[,1] <- x0
-  # x_noD[,1] <- x0
-  
+
   
   
   
@@ -123,26 +115,16 @@ proj_fn <- function(extract_, pj_, nt_, n_, b_, years_, theta_names_) {
       G <- trans_fn(b_[t - 1] * (Gt + Gf))
       D <- trans_fn(b_[t - 1] * (Dt + Df))
       A <-  R + (D %*% G %*% Q)
-      # diag(no_D) <- nod_ # no dispersal (retain loss on diagonal)        
-      # A_noD <- R + (no_D %*% G %*% Q) # no dispersal (retain loss on diagonal)   
       
       # project dynamics
       x[, t] <- A %*% x[, t - 1]
-      # x_noD[, t] <- A_noD %*% x_noD[, t - 1]
-      
+
       # store projection matrices for export
       RR[, , t - 1] <- R
       QQ[, , t - 1] <- Q
       GG[, , t - 1] <- G
       DD[, , t - 1] <- D
       AA[, , t - 1] <- A
-      # noDD[, , t - 1] <- no_D
-      # AA_noD[, , t - 1] <- A_noD
-      
-      # store projection matrices with standardized time steps
-      # QQs[, , t - 1] <- trans_fn(mean(b_) * (Qt + Qf))
-      # GGs[, , t - 1] <- trans_fn(mean(b_) * (Gt + Gf))
-      # DDs[, , t - 1] <- trans_fn(mean(b_) * (Dt + Df))
       
     }
   }
@@ -172,19 +154,6 @@ proj_fn <- function(extract_, pj_, nt_, n_, b_, years_, theta_names_) {
   
   
   
-  ### annual projection matrix (no dispersal)
-  # aa_noD <- lapply(1 : ny, function(i_){
-  #   ts <- sort(which(years_ == years_unique[i_]), decreasing = T)
-  #   
-  #   Reduce("%*%", 
-  #          lapply(ts, function(t_){AA_noD[,,t_]}))
-  #   
-  # })
-  # aa_noD_array <- aa_noD %>% unlist() %>% array(dim = c(n_, n_, ny))
-  
-  
-  
-  
   #### project annual population size 
   X_proj <- array(0, dim = c(n_, ny))
   X_proj[, 1] <- x[, 1]
@@ -193,16 +162,6 @@ proj_fn <- function(extract_, pj_, nt_, n_, b_, years_, theta_names_) {
     X_proj[, y] <- aa_array[, , y - 1] %*% X_proj[, y - 1]
     
   }
-  
-  #### project annual population size (no dispersal)
-  # X_noD_proj <- array(0, dim = c(n_, ny))
-  # X_noD_proj[, 1] <- x[, 1]
-  # for (y in 2 : ny) {
-  #   
-  #   X_noD_proj[, y] <- aa_noD_array[, , y - 1] %*% X_noD_proj[, y - 1]
-  #   
-  # }
-  
   
   
   
@@ -224,19 +183,10 @@ proj_fn <- function(extract_, pj_, nt_, n_, b_, years_, theta_names_) {
               GG = GG,
               DD = DD,
               AA = AA,
-              # noDD = noDD,
-              # AA_noD = AA_noD,
-              # QQs = QQs,
-              # GGs = GGs,
-              # DDs = DDs,
               x = x,
-              # x_noD = x_noD,
               aa = aa,
-              # aa_noD = aa_noD,
               aa_array = aa_array,
-              # aa_noD_array = aa_noD_array,
               X_proj = X_proj,
-              # X_noD_proj = X_noD_proj,
               theta = theta,
               n = n_, 
               years = years_))
