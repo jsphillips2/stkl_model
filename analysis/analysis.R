@@ -122,13 +122,15 @@ theme_set(theme_bw() %+replace%
 #                filter(str_detect(var, "log_lik_sum"))}$`50%`
 #     )
 #   }) %>%
-#   bind_rows()
+#   bind_rows() %>%
+#   mutate(delt_waic = waic - min(waic),
+#          delt_looic = looic - min(looic))
 # 
 # # export
 # write_csv(model_compare, "output/model_compare.csv")
 
 # read survival
-# model_compare <- read_csv("output/model_compare.csv")
+model_compare <- read_csv("output/model_compare.csv")
 
 #=========================================================================================
 
@@ -182,10 +184,9 @@ trans_sum_write
 #              st = str_split(var, "\\[|\\]|,") %>% map_int(~as.integer(.x[2])),
 #              time = str_split(var, "\\[|\\]|,") %>% map_int(~as.integer(.x[3])),
 #              date = date_match[time],
-#              kappa = fit_no_juv_move$data_list$s[st],
-#              lo = lo / kappa,
-#              mi = mi / kappa,
-#              hi = hi / kappa)
+#              lo = lo,
+#              mi = mi,
+#              hi = hi)
 #   }) %>%
 #   bind_rows()
 # 
@@ -206,11 +207,21 @@ fits <- read_csv("output/fits_write.csv") %>%
   full_join(state_match) %>%
   select(model, basin, state, stage, date, name, lo, mi, hi)
 
+# preapre CPUE data (average over stations and scale by relative basin area)
+cpue_prep <- data %>%
+  full_join(state_match %>%
+              mutate(kappa = fit_no_juv_move$data_list$s[st])) %>% 
+  mutate(cpue = kappa * cpue / mean(cpue)) %>%
+  group_by(date, state) %>%
+  summarize(cpue = mean(cpue)) 
+              
+
+
 # plot labels
 labs <- fits %>%
   tidyr::expand(state) %>%
   mutate(x = lubridate::as_date("2005-07-01"),
-         y = 11)
+         y = 13)
 
 # plot
 p_fit <- ggplot(data = fits,
@@ -224,9 +235,7 @@ p_fit <- ggplot(data = fits,
             color = "black",
             size = 3.2,
             inherit.aes = F)+
-  geom_point(data = data %>% mutate(cpue = cpue / mean(cpue)) %>%
-               group_by(date, state) %>%
-               summarize(cpue = mean(cpue)),
+  geom_point(data = cpue_prep,
              aes(y = cpue),
              shape = 21,
              size = 0.85,
@@ -241,7 +250,7 @@ p_fit <- ggplot(data = fits,
             size = 0.3,
             alpha = 1)+
   scale_y_continuous(name = Relative~abundance,
-                     limits = c(0, 12),
+                     limits = c(0, 14),
                      breaks = c(0, 4, 8, 12))+
   scale_x_date(name = "Date",
                limits = date_limits,
@@ -277,7 +286,7 @@ p_fit <- ggplot(data = fits,
 p_fit
 
 # export
-# ggsave(plot = p_fit, file = "analysis/figures/p_fit.pdf", width = 3.5, height = 3.5)
+# ggsave(plot = p_fit, file = "analysis/figures/fig_fit.pdf", width = 3.5, height = 3.5)
 
 #=========================================================================================
 
@@ -762,7 +771,7 @@ p_lam_b <- ggplot(data = wave_d,
   scale_y_continuous("Period (years)",
                      trans = "log",
                      breaks = 2 * c(1:5),
-                     limits = c(1.9, 10.9))+
+                     limits = c(1.9, 10.5))+
   scale_x_continuous(name = "Year",
                      limits = year_limits,
                      breaks = year_breaks)+
@@ -794,13 +803,13 @@ p_lam <- plot_grid(NULL, p_lam_a, NULL, p_lam_b,
                 align = "v",
                 axis = "tblr",
                 labels = c("",
-                           "a",
+                           "A",
                            "",
-                           "b"),
+                           "B"),
                 label_size = 12,
                 label_fontface = "plain",
-                hjust = c(0, 0, 0),
-                vjust = c(0,0,0,0))
+                hjust = c(0,0,0,0),
+                vjust = c(0,0.2,0,0.2))
 
 # examine
 p_lam
@@ -904,8 +913,8 @@ labs <- elsa_sum_plot %>%
 # bracket
 bracket <- elsa_sum_plot %>%
   tidyr::expand(type) %>%
-  mutate(x1 = c(4.6,NA),
-         x2 = c(5.4,NA),
+  mutate(x1 = c(4.625,NA),
+         x2 = c(5.35,NA),
          y0 = c(-0.2, NA),
          y1 = c(-0.3,NA),
          y2 = c(-0.4,NA))
@@ -944,7 +953,7 @@ p_elas <- ggplot(data =  elsa_sum_plot,
                size = 0.5)+
   geom_text(data = bracket,
             aes(x = x2+0.25, y = y2), 
-            label = "1990",
+            label = "1991",
             size = 2.75)+
   geom_text(data = bracket,
             aes(x = x1-0.25, y = y2), 

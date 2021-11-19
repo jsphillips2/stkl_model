@@ -109,7 +109,7 @@ proj_fn <- function(extract_, pj_, nt_, n_, b_, years_, theta_names_) {
       Dt[pj_[i, 2, 7], pj_[i, 3, 7]] <- c(0, dt[, t - 1])[pj_[i, 1, 7]]
       Df[pj_[i, 2, 8], pj_[i, 3, 8]] <- c(0, df)[pj_[i, 1, 8]]
       
-      # calculate projection matricees
+      # calculate projection matrices
       R <- Rt + Rf
       Q <- trans_fn(b_[t - 1] * (Qt + Qf))
       G <- trans_fn(b_[t - 1] * (Gt + Gf))
