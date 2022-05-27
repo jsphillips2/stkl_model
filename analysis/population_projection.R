@@ -8,13 +8,13 @@ library(Matrix)
 library(matrixcalc)
 source("analysis/population_projection_functions.R")
 
-options(mc.cores = parallel::detectCores()-6)
+# options(mc.cores = parallel::detectCores()-4)
 
 # import model
 fit_no_juv_move <- read_rds("output/fit_no_juv_move.rds")
 
 # extract data
-data <- fit_no_juv_move$data
+data <- fit_no_juv_move$data_sort
 data_list <- fit_no_juv_move$data_list
 fit <- fit_no_juv_move$fit 
 fit_summary <- fit_no_juv_move$fit_summary 

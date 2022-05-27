@@ -113,7 +113,7 @@ theme_set(theme_bw() %+replace%
 
 # # extract LOOIC and posterior log likelihood
 # model_compare <- model_names %>%
-#   lapply(function(x){
+#   parallel::mclapply(function(x){
 #     xx = models[x]
 #     tibble(model = x,
 #            waic = waic(extract_log_lik(xx[[1]]$fit))$estimates["waic","Estimate"],
@@ -142,9 +142,8 @@ model_compare <- read_csv("output/model_compare.csv")
 #========== Stage-transition
 #=========================================================================================
 
-# # extract
-ids <- proj_no_juv_move [[1]]$setup$ids
 # extract
+ids <- proj_no_juv_move [[1]]$setup$ids
 trans_full <- parallel::mclapply(ids, function(i_){
   proj_ = proj_no_juv_move [[i_]]$proj
   tibble(gg = proj_$GG[2,1,1]) 
@@ -172,7 +171,7 @@ trans_sum_write
 
 # # extract fits
 # fits_write <- model_names %>%
-#   lapply(function(x){
+#   parallel::mclapply(function(x){
 #     xx = models[x]
 #     xxx = xx[[1]]$fit_summary
 #     xxx %>%
@@ -298,9 +297,8 @@ p_fit
 #========== Recruitment
 #=========================================================================================
 
-# extract
-# ids <- proj_no_juv_move[[1]]$setup$ids
 # # extract
+# ids <- proj_no_juv_move[[1]]$setup$ids
 # rec_full <- parallel::mclapply(ids, function(i_){
 #   proj_ = proj_no_juv_move [[i_]]$proj
 #   RR_ = proj_$RR
@@ -629,7 +627,7 @@ p_disp
 #========== Lambda
 #=========================================================================================
 
-# extract
+# # extract
 # ids <- proj_no_juv_move [[1]]$setup$ids
 # years <- proj_no_juv_move [[1]]$setup$years
 # lam_full <- parallel::mclapply(ids, function(i_){
