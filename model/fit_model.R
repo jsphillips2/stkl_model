@@ -40,9 +40,8 @@ data <- read_csv("data/hornsili_cpue_clean.csv") %>%
 
 
 
-
 #=========================================================================================
-#========== Define demographic matrices
+#========== Package data
 #=========================================================================================
 
 # number of stages
@@ -51,70 +50,12 @@ stages <- data$stage %>% unique() %>% length()
 # number of sites
 sites <- data$basin %>% unique() %>% length()
 
-# function for block-diagonal matrix from submatrix
-block_fn <- function(v_, r_, c_) {
-  as.matrix(Reduce("bdiag", 
-                   lapply(1:c_, function(x){
-                     matrix(v_, nrow = r_, ncol = r_, byrow = T)
-                   })))
-}
+# select model
+models <- c("full","no_juv_move","no_move","null")
+model <- models[1]
 
-# site-specific stage transitions (time-varying)
-qt_block <- block_fn(v_ = c(1, 0,
-                            0, 1),
-                     c_ = sites, r_ = stages)
-
-# site-specific stage transitions (fixed)
-qf_block <- block_fn(v_ = c(0, 0,
-                            0, 0),
-                     c_ = sites, r_ = stages)
-
-# site-specific stage transitions (time-varying)
-gt_block <- block_fn(v_ = c(0, 0,
-                            0, 0),
-                     c_ = sites, r_ = stages)
-
-# site-specific stage transitions (fixed)
-gf_block <- block_fn(v_ = c(0, 0,
-                            1, 0),
-                     c_ = sites, r_ = stages)
-
-# stage-specific site transitions (time-varying)
-# diagonal should be 0
-dt_block <- matrix(c(0, 0, 1, 0,
-                     0, 0, 0, 1,
-                     1, 0, 0, 0,
-                     0, 1, 0, 0),
-                   nrow = stages * sites, ncol = sites * sites)
-
-
-# stage-specific site transitions (fixed)
-# diagonal should be 0
-df_block <- matrix(c(0, 0, 0, 0,
-                     0, 0, 0, 0,
-                     0, 0, 0, 0,
-                     0, 0, 0, 0),
-                   nrow = stages * sites, ncol = sites * sites)
-
-# site-specific recruitment (time-varying)
-rt_block <- block_fn(v_ = c(0, 1,
-                            0, 0),
-                     c_ = sites, r_ = stages)
-
-# site-specific recruitment (fixed)
-rf_block <- block_fn(v_ = c(0, 0,
-                            0, 0),
-                     c_ = sites, r_ = stages)
-
-#=========================================================================================
-
-
-
-
-
-#=========================================================================================
-#========== Package data
-#=========================================================================================
+# define demographic matrices (uses 'model' as input)
+source("model/demographic_matrices.R")
 
 # set indeces
 nc = stages
@@ -213,7 +154,7 @@ ggplot(data = data_sort %>% filter(basin == "north", stage == "large") %>%
   ylim(c(0, 400))+
   theme_bw()
 
-# scale CPUE by global meaan
+# scale CPUE by global mean
 y <- yy / mean(yy)
 
 # define mapping of stages and classes to states
@@ -232,7 +173,7 @@ m <- data_sort %>%
 b <- rep(0.5, nt - 1)
 
 # priors
-p <- c(2, 2, 2, 2)
+p <- c(2, 2, 0.5, 2)
 
 # scaling factor for relative basin area
 s <- c(2, 2, 1, 1)
@@ -260,30 +201,32 @@ data_list <- list(n = n,
 #========== Fit model
 #=========================================================================================
 
-# MCMC specifications
+# # MCMC specifications
 # chains <- 4
-# iter <- 4000
-# adapt_delta <- 0.9
+# iter <- 20000
+# adapt_delta <- 0.97
 # max_treedepth <- 11
-
-# fit model
+# thin <-2
+# 
+# # fit model
 # start_time <- Sys.time()
 # fit <- stan(file = "model/multi_state.stan",
 #             data = data_list,
 #             seed=2e3,
 #             chains = chains,
 #             iter = iter,
-#             control = list(adapt_delta = adapt_delta, 
+#             thin = thin,
+#             control = list(adapt_delta = adapt_delta,
 #                            max_treedepth = max_treedepth))
 # end_time <- Sys.time()
 # end_time - start_time
-
-# summarize fit
+# 
+# # summarize fit
 # fit_summary = rstan::summary(fit, probs=c(0.16, 0.5, 0.84))$summary %>%
 #   {as_tibble(.) %>%
 #       mutate(var = rownames(rstan::summary(fit)$summary))}
-
-# package for export
+# 
+# # package for export
 # out <- list(data_sort = data_sort,
 #             mat_list = list(rt_block, rf_block, qt_block, qf_block, dt_block, df_block),
 #             data_list = data_list,
@@ -293,9 +236,9 @@ data_list <- list(n = n,
 #                               max_treedepth = max_treedepth),
 #             fit = fit,
 #             fit_summary = fit_summary)
-
-# export
-# write_rds(out,  "output/fit_full.rds")
+# 
+# # export
+# write_rds(out,  paste0("output/fit_", model, ".rds"))
 
 #=========================================================================================
 
@@ -340,8 +283,8 @@ x_clean %>%
                   ymin = lo, 
                   ymax = hi),
               linetype = 0, alpha = 0.2)+
-  scale_color_manual("",values = c("dodgerblue","gray35"), guide = F)+
-  scale_fill_manual("",values = c("dodgerblue","gray35"), guide = F)+
+  scale_color_manual("",values = c("dodgerblue","gray35"), guide = "none")+
+  scale_fill_manual("",values = c("dodgerblue","gray35"), guide = "none")+
   scale_x_date("Date",
                breaks = lubridate::as_date(c("1994-06-01","2003-06-01","2012-06-01")),
                labels = c("1994","2003","2012"))
