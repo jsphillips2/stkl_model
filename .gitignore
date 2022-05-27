@@ -46,3 +46,12 @@ rsconnect/
 *.rds
 database
 *.tiff
+*.dbf
+*.prj
+*.sbn
+
+*.shp
+
+*.xml
+
+*.shx
